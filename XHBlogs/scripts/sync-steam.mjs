@@ -97,6 +97,11 @@ async function getRetry(url, options = {}, attempts = 4) {
 const previous = await readFile(DATA, 'utf8').then((text) => JSON.parse(text)).catch(() => ({}));
 const previousItems = new Map((previous.workshop ?? []).map((item) => [item.id, item]));
 
+// Items the profile owns but whose page credits someone else stay "author" on request.
+const siteConfig = await readFile(path.join(ROOT, 'siteConfig.ts'), 'utf8').catch(() => '');
+const forcedAuthors = new Set([...(siteConfig.match(/steamWorkshopAuthors:\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/"(\d+)"/g)].map((m) => m[1]));
+if (forcedAuthors.size) console.log(`手动指定作者：${[...forcedAuthors].join(', ')}`);
+
 const profileUrl = `https://steamcommunity.com/profiles/${PROFILE_ID}/`;
 
 // ---- profile -----------------------------------------------------------------
@@ -219,7 +224,7 @@ try {
       title,
       description: description.slice(0, 80),
       cover: cover || '/images/dream.webp',
-      role,
+      role: forcedAuthors.has(id) ? 'author' : role,
       subs,
       favorites,
       views,

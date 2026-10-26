@@ -49,6 +49,8 @@ export const siteConfig = {
   bilibiliUid: "1818296505",
   // 留空 = 同步空间里的全部投稿；填 BV 号则只展示这几个
   bilibiliVideos: [],
+  // Steam 创意工坊里由自己上传/参与但页面作者不是本账号的条目，填工坊 ID 强制标为「作者」
+  steamWorkshopAuthors: ["3521710695"],
   social: {
     github: "",
     gitee: "",

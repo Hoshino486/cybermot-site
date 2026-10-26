@@ -12,7 +12,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "cybermot-blog"
+      "service": "cybermot-site"
     }
   ]
   // Add bomber.asia through the Cloudflare dashboard after verifying the preview.

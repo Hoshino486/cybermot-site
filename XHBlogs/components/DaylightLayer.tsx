@@ -10,9 +10,14 @@ type Stop = { hour: number; from: number[]; to: number[]; opacity: number };
 
 const STOPS: Stop[] = [
   { hour: 0, from: [12, 26, 48], to: [22, 46, 78], opacity: 0.5 },
-  { hour: 4.5, from: [14, 30, 54], to: [30, 52, 84], opacity: 0.48 },
-  { hour: 6, from: [246, 188, 166], to: [255, 216, 190], opacity: 0.38 },
-  { hour: 8, from: [255, 232, 205], to: [205, 233, 243], opacity: 0.24 },
+  { hour: 5, from: [10, 22, 42], to: [18, 38, 66], opacity: 0.52 },
+  // 凌晨到 7:30 都还算夜晚，只是天光在边缘慢慢透一点蓝
+  { hour: 7, from: [24, 38, 62], to: [52, 68, 92], opacity: 0.46 },
+  // 蓝色直接插到桃色会经过一层脏灰，所以拆成 紫 → 玫 → 桃 三段
+  { hour: 7.2, from: [56, 54, 88], to: [92, 76, 108], opacity: 0.46 },
+  { hour: 7.4, from: [168, 116, 122], to: [214, 148, 146], opacity: 0.42 },
+  { hour: 7.5, from: [246, 188, 166], to: [255, 216, 190], opacity: 0.38 },
+  { hour: 9, from: [255, 232, 205], to: [205, 233, 243], opacity: 0.26 },
   { hour: 12, from: [255, 255, 255], to: [214, 240, 247], opacity: 0.14 },
   { hour: 16, from: [255, 236, 208], to: [247, 218, 194], opacity: 0.22 },
   { hour: 18.5, from: [255, 158, 120], to: [176, 125, 184], opacity: 0.4 },

@@ -126,7 +126,7 @@ html.dark{--day-glow-scale:.62}
 @media(prefers-reduced-motion:reduce){.hero-copy h1{transform:none;transition:none}.hero-copy h1::before,.hero-copy h1::after{animation:none}}
 @media(max-width:650px){.hero-copy h1{transform:none}}
 /* ---- 标题：Cyberpunk 2077 式硬边挤出立体字 ---- */
-.hero-copy h1{color:#f7fdff;-webkit-text-stroke:.6px rgba(6,22,30,.42);text-shadow:1px 1px 0 #0a212b,2px 2px 0 #0c2630,3px 3px 0 #0f2d38,4px 4px 0 rgba(14,42,52,.9),5px 5px 0 rgba(95,240,255,.25),0 0 34px rgba(95,240,255,.14);transform:perspective(1400px) rotateY(calc(-2deg + var(--mx,0) * -3deg)) rotateX(calc(1deg + var(--my,0) * 2deg)) skewX(-2.2deg);transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+.hero-copy h1{color:#f7fdff;-webkit-text-stroke:.8px rgba(6,22,30,.5);text-shadow:3px 3px 0 #0a212b,6px 6px 0 #0c2630,9px 9px 0 #0f2d38,12px 12px 0 rgba(14,42,52,.92),15px 15px 0 rgba(95,240,255,.22),0 0 38px rgba(95,240,255,.14);transform:perspective(1400px) rotateY(calc(-2deg + var(--mx,0) * -3deg)) rotateX(calc(1deg + var(--my,0) * 2deg)) skewX(-2.2deg);transition:transform .5s cubic-bezier(.22,.61,.36,1)}
 .hero-copy h1::before,.hero-copy h1::after{content:attr(data-text);position:absolute;left:0;top:0;pointer-events:none;font:inherit;letter-spacing:inherit;white-space:nowrap;mix-blend-mode:normal;opacity:0;text-shadow:none;-webkit-text-stroke:0;will-change:clip-path,transform,opacity}
 .hero-copy h1::before{color:#ff2f8e;clip-path:inset(var(--g-top,38%) 0 var(--g-bottom,46%) 0);animation:none}
 .hero-copy h1::after{color:#5ff0ff;clip-path:inset(var(--g2-top,62%) 0 var(--g2-bottom,22%) 0);animation:none}
@@ -149,7 +149,7 @@ html.dark{--day-glow-scale:.62}
 @media(prefers-reduced-motion:reduce){.hero-copy h1{animation:none}.hero-copy h1::before,.hero-copy h1::after{animation:none}}
 /* ---- 标题字体：得意黑（Smiley Sans, SIL OFL 1.1）子集，仅含标题用字 ---- */
 @font-face{font-family:'CM Display';src:url('/fonts/noto-title.woff2') format('woff2');font-display:swap;font-weight:100 900;font-style:normal}
-.hero-copy h1{font-family:'CM Display','Microsoft YaHei','PingFang SC',sans-serif;font-weight:900;letter-spacing:.08em;font-style:normal;transform:scaleX(.97) perspective(1400px) rotateY(calc(-2deg + var(--mx,0) * -3deg)) rotateX(calc(1deg + var(--my,0) * 2deg))}
+.hero-copy h1{font-family:'CM Display','Microsoft YaHei','PingFang SC',sans-serif;font-weight:900;letter-spacing:.06em;font-style:normal;transform:scaleX(.97) perspective(1400px) rotateY(calc(-2deg + var(--mx,0) * -3deg)) rotateX(calc(1deg + var(--my,0) * 2deg))}
 .hero-copy h1>span{font-weight:900}
 .hero-english{font-family:'CM Display','Microsoft YaHei',sans-serif;font-weight:400}
 /* ---- 逐字入场：每个字自己闪进来，错开 110ms ---- */

@@ -2,7 +2,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
 import { siteConfig } from '../../siteConfig';
+import CommentsEmbed from '../../components/CommentsEmbed';
 
 type Chatter = {
   slug: string;
@@ -17,6 +19,8 @@ type Chatter = {
 export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTag, setActiveTag] = useState("全部");
+  // 每张卡片自带一个折叠的留言抽屉，和详情页共用同一条会话
+  const [openComments, setOpenComments] = useState<string | null>(null);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -148,6 +152,38 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
                   )}
                 </div>
               </Link>
+
+              <div className="mt-2 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => setOpenComments(openComments === chatter.slug ? null : chatter.slug)}
+                  aria-expanded={openComments === chatter.slug}
+                  aria-label={`留言：${chatter.title}`}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] md:text-xs font-bold transition-all ${
+                    openComments === chatter.slug
+                      ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                      : 'bg-white/50 text-slate-500 hover:text-indigo-500 dark:bg-slate-800/50 dark:text-slate-400'
+                  }`}
+                >
+                  <MessageSquare size={12} />
+                  留言
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {openComments === chatter.slug && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-2xl border border-white/40 bg-white/50 p-3 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/50">
+                      <CommentsEmbed pageId={`/chatter/${chatter.slug}`} compact />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </AnimatePresence>

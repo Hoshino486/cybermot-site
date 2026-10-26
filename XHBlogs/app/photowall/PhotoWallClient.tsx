@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
+import { MessageSquare } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
+import CommentsEmbed from '../../components/CommentsEmbed';
 import { albums, Album } from '../../data/albums';
 
 export default function PhotoWallClient() {
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
   const [selectedImage, setSelectedImage] = useState<{url: string, caption?: string} | null>(null);
+  // 每个相册一条会话，留言挂在相册头部，而不是页面最底部；换相册时自动收起
+  const [commentAlbumId, setCommentAlbumId] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
@@ -165,10 +169,31 @@ export default function PhotoWallClient() {
                   <p className="text-slate-600 dark:text-slate-400 font-medium text-lg">{currentAlbum.description}</p>
                 </div>
 
-                <div className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/50 dark:border-white/10 shadow-sm">
-                  共 <span className="text-indigo-500 dark:text-indigo-400 text-lg">{currentAlbum.photos.length}</span> 瞬间
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCommentAlbumId(commentAlbumId === currentAlbum.id ? null : currentAlbum.id)}
+                    aria-expanded={commentAlbumId === currentAlbum.id}
+                    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold shadow-sm transition-all ${
+                      commentAlbumId === currentAlbum.id
+                        ? 'bg-indigo-500 text-white shadow-indigo-500/30'
+                        : 'bg-white/40 text-slate-500 hover:text-indigo-500 dark:bg-slate-800/40 dark:text-slate-400'
+                    }`}
+                  >
+                    <MessageSquare size={15} />
+                    留言
+                  </button>
+                  <div className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-white/40 dark:bg-slate-800/40 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/50 dark:border-white/10 shadow-sm">
+                    共 <span className="text-indigo-500 dark:text-indigo-400 text-lg">{currentAlbum.photos.length}</span> 瞬间
+                  </div>
                 </div>
               </div>
+
+              {commentAlbumId === currentAlbum.id && (
+                <div className="mb-10 rounded-2xl border border-white/40 bg-white/50 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/50">
+                  <CommentsEmbed pageId={`/photowall/${currentAlbum.id}`} compact />
+                </div>
+              )}
 
               <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
                 {currentAlbum.photos.map((photo, index) => (

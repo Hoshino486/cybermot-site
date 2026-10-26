@@ -1,0 +1,116 @@
+'use client';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
+import Navbar from './Navbar';
+import { useSitePreferences } from './SitePreferencesProvider';
+import { openMusicPlayer } from './NeteasePlayer';
+import { siteConfig } from '../siteConfig';
+import type { PostSummary } from '../lib/posts';
+
+const chapters = [{ id: 'home', title: '序章', english: 'PROLOGUE' }, { id: 'journal', title: '记录', english: 'JOURNAL' }, { id: 'universe', title: '回响', english: 'UNIVERSE' }];
+const destinations = [
+  { title: '灵感工坊', subtitle: '把想象，变成现实', href: '/projects', icon: Code2, number: '01' },
+  { title: '瞬间收藏', subtitle: '那些不想忘记的日常', href: '/moments', icon: Feather, number: '02' },
+  { title: '光影相册', subtitle: '用画面，留住时间', href: '/photowall', icon: Camera, number: '03' },
+  { title: '灵境漫游', subtitle: '在交互里，发现好奇', href: '/tree', icon: Orbit, number: '04' },
+];
+const formatDate = (date: string) => date ? date.slice(0, 10).replaceAll('-', '.') : '';
+
+export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
+  const root = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState('home');
+  const { scene, setScene, motion, setMotion } = useSitePreferences();
+  const [category, setCategory] = useState('全部');
+  const tags = ['全部', ...Array.from(new Set(posts.flatMap(post => post.tags.filter(tag => tag !== '示例')))).slice(0, 4)];
+  const visiblePosts = category === '全部' ? posts : posts.filter(post => post.tags.includes(category));
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });
+    }, { rootMargin: '-25% 0px -45% 0px', threshold: 0 });
+    chapters.forEach(chapter => { const node = document.getElementById(chapter.id); if (node) observer.observe(node); });
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const node = root.current;
+    if (!node) return;
+    if (!motion || !window.matchMedia('(pointer: fine)').matches) { node.style.setProperty('--mx', '0'); node.style.setProperty('--my', '0'); return; }
+    let frame = 0;
+    let x = 0, y = 0;
+    const update = () => { node.style.setProperty('--mx', String(x)); node.style.setProperty('--my', String(y)); frame = 0; };
+    const mouse = (event: PointerEvent) => { x = event.clientX / window.innerWidth - .5; y = event.clientY / window.innerHeight - .5; if (!frame) frame = requestAnimationFrame(update); };
+    const reset = () => { x = 0; y = 0; if (!frame) frame = requestAnimationFrame(update); };
+    window.addEventListener('pointermove', mouse, { passive: true }); document.addEventListener('pointerleave', reset);
+    return () => { window.removeEventListener('pointermove', mouse); document.removeEventListener('pointerleave', reset); cancelAnimationFrame(frame); };
+  }, [motion]);
+  function toggleMotion() { setMotion(!motion); }
+  const visit = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: motion ? 'smooth' : 'instant' }); };
+
+  return <div ref={root} className={'cm-experience ' + (motion ? '' : 'motion-off') + (scene ? ' dream-scene' : '')}>
+    <Navbar />
+    <nav className="chapter-rail" aria-label="页面章节">
+      {chapters.map((chapter, index) => <button key={chapter.id} className={active === chapter.id ? 'active' : ''} onClick={() => visit(chapter.id)} aria-label={'跳转到' + chapter.title} aria-current={active === chapter.id ? 'location' : undefined}><span>0{index + 1}</span><i/><b>{chapter.title}</b></button>)}
+      <span className="rail-line"/><span className="rail-caption">SCROLL TO EXPLORE</span>
+    </nav>
+
+    <main>
+      <section className="hero-scene" id="home" aria-labelledby="hero-title">
+        <div className="scene-coordinate"><span>CM / PERSONAL UNIVERSE</span><span>EST. 2026 — ∞</span></div>
+
+        <div className="hero-inner">
+          <div className="hero-copy">
+            <div className="hero-eyebrow"><span className="live-dot"/> HELLO, WORLD. <span className="eyebrow-line"/> 很高兴在这里遇见你</div>
+            <h1 id="hero-title">赛博<span>刹那</span><i>✦</i></h1>
+            <div className="hero-english">CYBERMOT<span>THE MOMENT IS INFINITE.</span></div>
+            <p className="hero-description">在数字世界，收藏每一个<br className="desktop-break"/>值得停留的<span>瞬间。</span></p>
+            <div className="hero-actions"><button className="primary-action" onClick={() => visit('journal')}>开始探索 <ArrowDown size={17}/></button><Link className="secondary-action" href="/about">关于我 <ArrowUpRight size={17}/></Link></div>
+            <div className="hero-signature"><span>创作</span><i/><span>记录</span><i/><span>一点点天马行空</span></div>
+          </div>
+
+          <div className="hero-art" aria-label="赛博刹那的个人空间卡片">
+            <div className="orbit-system" aria-hidden="true"><div className="orbit-ring ring-one"/><div className="orbit-ring ring-two"/><div className="orbit-ring ring-three"/><span className="orbit-cross cross-one">+</span><span className="orbit-cross cross-two">+</span><span className="orbit-label">KEEP EXPLORING<br/>STAY CURIOUS.</span></div>
+            <div className="floating-shard shard-one" aria-hidden="true"/><div className="floating-shard shard-two" aria-hidden="true"/>
+            <Link href="/about" className="identity-card">
+              <div className="identity-card-top"><span>PERSONAL FILE</span><span>NO. 001 ↗</span></div>
+              <div className="identity-image"><img src={siteConfig.avatarUrl} alt="赛博刹那的蓝发动漫头像" width="1080" height="1080" fetchPriority="high"/><span className="identity-sticker">THIS IS ME.</span></div>
+              <div className="identity-bottom"><div><span>独立于世界，也连接着世界。</span><h2>{siteConfig.englishName}<small>赛博刹那</small></h2></div><ArrowUpRight size={25}/></div>
+              <div className="identity-card-bottom"><span>CREATOR / DREAMER</span><span className="barcode">▌▎▎▌▌▎▌▎▎▌▌</span></div>
+            </Link>
+            <div className="floating-note"><span className="live-dot"/> 捕获一段灵感 <Sparkles size={13}/></div>
+          </div>
+        </div>
+
+        <div className="hero-bottom">
+          <button className="scroll-cue" onClick={() => visit('journal')} aria-label="向下探索"><span className="mouse-outline"><i/></span><span>向下滚动<small>THERE IS MORE BELOW</small></span></button>
+          <div className="scene-switch" aria-label="切换背景场景"><span>SCENE</span><button onClick={() => setScene(0)} aria-pressed={scene === 0}>01 <span>浮光</span></button><i/><button onClick={() => setScene(1)} aria-pressed={scene === 1}>02 <span>星夜</span></button></div>
+          <button className="motion-toggle" onClick={toggleMotion} aria-label={motion ? '关闭空间动效' : '开启空间动效'} aria-pressed={motion}>{motion ? <Pause size={12}/> : <Play size={12}/>}<span>空间动效 {motion ? 'ON' : 'OFF'}</span></button>
+        </div>
+      </section>
+
+      <section className="journal-section cm-section" id="journal" aria-labelledby="journal-title">
+        <div className="section-topline"><span>CHAPTER 02 / JOURNAL</span><span>WORDS ARE LITTLE WORLDS.</span></div>
+        <div className="section-heading"><div><span className="section-kicker">留下一点，存在过的痕迹。</span><h2 id="journal-title">文字与<span>灵感</span><sup>({String(posts.length).padStart(2, '0')})</sup></h2></div><Link className="text-link" href="/blog">进入博客 <ArrowUpRight size={17}/></Link></div>
+        <div className="journal-toolbar"><div className="category-tabs" aria-label="按标签筛选文章">{tags.map(tag => <button key={tag} aria-pressed={category === tag} className={category === tag ? 'selected' : ''} onClick={() => setCategory(tag)}>{tag}</button>)}</div><Link href="/timeline" className="archive-link">按时间归档 <Layers3 size={15}/></Link></div>
+        <div className="journal-grid">
+          {visiblePosts.slice(0, 3).map((post, index) => <article className="journal-card" key={post.slug}>
+            <Link className="post-cover" href={'/posts/' + post.slug}><img src={post.cover} alt="" loading="lazy"/><span className="post-number">0{index + 1}</span><span className="post-open"><ArrowUpRight size={20}/></span><span className="post-image-label">{index === 0 ? 'A NEW BEGINNING' : index === 1 ? 'SOMEWHERE TO STAY' : 'SMALL, BEAUTIFUL THINGS'}</span></Link>
+            <div className="post-content"><div className="post-meta"><span>{post.tags[0] || '随笔'}</span><time dateTime={post.date}>{formatDate(post.date)}</time>{post.sample && <em>示例文章</em>}</div><h3><Link href={'/posts/' + post.slug}>{post.title}</Link></h3><p>{post.description}</p><div className="post-bottom"><span>{post.readingMinutes} 分钟阅读</span><Link href={'/posts/' + post.slug} aria-label={'阅读' + post.title}>阅读全文 <ArrowRight size={14}/></Link></div></div>
+          </article>)}
+          {visiblePosts.length === 0 && <p className="empty-message">这个分类还没有文章，新的故事正在路上。</p>}
+        </div>
+        <div className="journal-footnote"><span className="tiny-cross">+</span><span>每一个微小的想法，都值得被认真保存。</span><span className="tiny-cross">+</span></div>
+      </section>
+
+      <section className="universe-section cm-section" id="universe" aria-labelledby="universe-title">
+        <div className="section-topline"><span>CHAPTER 03 / UNIVERSE</span><span>MORE THAN JUST WORDS.</span></div>
+        <div className="section-heading"><div><span className="section-kicker">在这里，还可以找到…</span><h2 id="universe-title">我的小小<span>宇宙</span><Orbit size={36}/></h2></div><span className="universe-note">自由生长，持续更新。</span></div>
+        <div className="universe-grid"><div className="destination-grid">{destinations.map(item => <Link key={item.href} className="destination-card" href={item.href}><div><item.icon size={25} strokeWidth={1.3}/><span>{item.number} / EXPLORE</span></div><h3>{item.title}<ArrowUpRight size={20}/></h3><p>{item.subtitle}</p></Link>)}</div>
+          <button className="music-feature" onClick={openMusicPlayer}><div className="music-feature-top"><Headphones size={18}/><span>SOUNDTRACK OF MY LIFE</span><ArrowUpRight size={20}/></div><div className="vinyl"><div><img src={siteConfig.avatarUrl} alt=""/><i/></div></div><div className="music-feature-text"><span>网易云音乐 / MY PLAYLIST</span><h3>听见，<br/>另一个世界。</h3><p>给生活一点背景音乐。</p><span className="listen-button"><Play size={13} fill="currentColor"/> 打开我的歌单</span></div></button>
+        </div>
+        <div className="connection-strip"><div><Compass size={23} strokeWidth={1.3}/><p>相遇本身，就是一件很浪漫的事。<span>让我们在互联网的某个角落，交换彼此的宇宙。</span></p></div><Link href="/friends">去朋友家坐坐 <ArrowUpRight size={18}/></Link></div>
+        <div className="more-links"><Link href="/chatter">碎碎念 <ChevronRight size={13}/></Link><Link href="/timeline">时间轴 <ChevronRight size={13}/></Link><Link href="/music">音乐馆 <ChevronRight size={13}/></Link><a href="/feed.xml">RSS 订阅 <Rss size={13}/></a></div>
+      </section>
+    </main>
+    <footer className="cm-footer"><div className="footer-brand"><span className="cm-mark"><i/></span><b>CyberMot<span>记录刹那，连接无限。</span></b></div><div><span>© 2026 CyberMot · 赛博刹那</span><span>基于 <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener noreferrer">XHBlogs</a> · CC BY-NC 4.0</span></div><button onClick={() => visit('home')}>BACK TO TOP <MoveUpRight size={15}/></button></footer>
+  </div>;
+}

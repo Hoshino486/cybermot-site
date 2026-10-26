@@ -1,0 +1,76 @@
+{
+  "name": "cybermot-blog",
+  "version": "0.4.1",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/next.mjs dev",
+    "build": "node scripts/next.mjs build",
+    "start": "node scripts/next.mjs start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy:cloudflare": "opennextjs-cloudflare deploy",
+    "check:cloudflare": "wrangler deploy --dry-run",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "test:e2e": "playwright test",
+    "screenshots": "node scripts/preview-screenshots.mjs"
+  },
+  "dependencies": {
+    "@opennextjs/cloudflare": "1.20.13",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "framer-motion": "^12.38.0",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.45",
+    "lucide-react": "^1.7.0",
+    "next": "16.4.3",
+    "next-themes": "^0.4.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "rehype-highlight": "^7.0.2",
+    "rehype-katex": "^7.0.1",
+    "rehype-stringify": "^10.0.1",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-html": "^16.0.1",
+    "remark-math": "^6.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "three": "^0.184.0",
+    "unified": "^11.0.5"
+  },
+  "overrides": {
+    "@node-minify/core": {
+      "glob": "10.5.0"
+    },
+    "miniflare": {
+      "undici": "7.30.1"
+    },
+    "@humanfs/node@0.16": "0.16.8",
+    "brace-expansion@1": "1.1.21",
+    "brace-expansion@5": "5.0.12",
+    "fflate@0.6": "0.6.11",
+    "fflate@0.8": "0.8.3",
+    "js-yaml@3": "3.15.2",
+    "js-yaml@4": "4.3.2",
+    "picomatch@4": "4.0.4",
+    "source-map-js": "1.2.2",
+    "zod@4": "4.6.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "4.152.0"
+  }
+}

@@ -1,0 +1,26 @@
+import { chromium } from '@playwright/test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const output = path.resolve('..', 'artifacts');
+await fs.mkdir(output, { recursive: true });
+const browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
+const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
+const errors = [];
+page.on('pageerror', error => errors.push(error.message));
+await page.goto('http://127.0.0.1:3000', { waitUntil: 'networkidle' });
+await page.waitForTimeout(1400);
+await page.screenshot({ path: path.join(output, 'home-desktop.png'), fullPage: true });
+await page.screenshot({ path: path.join(output, 'home-hero.png') });
+console.log('Desktop', await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth, images: Array.from(document.images).filter(img => !img.complete || img.naturalWidth === 0).map(img => img.src) })));
+await page.getByRole('button', { name: '切换深色主题' }).click();
+await page.waitForTimeout(500);
+await page.screenshot({ path: path.join(output, 'home-dark.png') });
+await page.getByRole('button', { name: '切换浅色主题' }).click();
+await page.setViewportSize({ width: 390, height: 844 });
+await page.goto('http://127.0.0.1:3000', { waitUntil: 'networkidle' });
+await page.waitForTimeout(1400);
+await page.screenshot({ path: path.join(output, 'home-mobile.png'), fullPage: true });
+console.log('Mobile', await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth })));
+console.log('Page errors', errors);
+await browser.close();
+

@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cybermot-blog",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-26",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "cybermot-blog"
+    }
+  ]
+  // Add bomber.asia through the Cloudflare dashboard after verifying the preview.
+  // "routes": [{ "pattern": "bomber.asia", "custom_domain": true }]
+}

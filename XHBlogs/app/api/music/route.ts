@@ -9,9 +9,12 @@ async function request(path: string) {
   return response.json();
 }
 function normalize(song: RawSong) {
+  // A track listed in siteConfig.localMusic wins: it is served from public/music and
+  // needs no NetEase request, so it keeps working from regions NetEase blocks.
+  const local = (siteConfig as { localMusic?: Record<string, string> }).localMusic?.[String(song.id)];
   return { id: String(song.id), title: song.name || '未命名歌曲', artist: (song.ar || song.artists || []).map(item => item.name).join(' / ') || '未知歌手',
     cover: (song.al?.picUrl || song.album?.picUrl || siteConfig.avatarUrl).replace(/^http:/, 'https:'),
-    duration: (song.dt || song.duration || 0) / 1000, src: '/api/music/stream?id=' + song.id };
+    duration: (song.dt || song.duration || 0) / 1000, src: local || '/api/music/stream?id=' + song.id };
 }
 export async function GET(requestInfo: NextRequest) {
   try {

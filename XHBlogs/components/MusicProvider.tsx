@@ -20,6 +20,13 @@ function read(key: string, fallback: string) { try { return localStorage.getItem
 function save(key: string, value: string) { try { localStorage.setItem(PREFIX + key, value); } catch {} }
 function pausedBefore() { try { return sessionStorage.getItem(PREFIX + 'paused') === 'true'; } catch { return false; } }
 function savePaused(value: boolean) { try { sessionStorage.setItem(PREFIX + 'paused', String(value)); } catch {} }
+// NetEase refuses playback requests coming from overseas IPs (the Worker's egress),
+// but the visitor's browser sits in mainland China, so resolve the audio there.
+// A src under /music/ is a self-hosted file in public/music and always wins.
+function playbackUrl(song: MusicSong) {
+  if (song.src.startsWith('/music/')) return song.src;
+  return 'https://music.163.com/song/media/outer/url?id=' + song.id + '.mp3';
+}
 function parseLyrics(value: string): Lyric[] {
   if (value.length > 60000) return [];
   return value.split(/\r?\n/).flatMap(line => {
@@ -75,7 +82,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     setCurrentIndex(index);
     setCurrentTime(0); setDuration(0); setIsPlaying(false); setErrorMessage('');
     wantedRef.current = play;
-    audio.src = song.src;
+    audio.src = playbackUrl(song);
     audio.load();
     setStatus(play ? 'loading' : 'paused');
     if (play) attemptPlay();
@@ -90,7 +97,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       else {
         wantedRef.current = false;
         setIsPlaying(false); setStatus('error');
-        setErrorMessage('暂时没有可播放的音源，可重试或到网易云收听。');
+        setErrorMessage('这首歌暂时无法播放（可能在版权地区之外或需要会员），可点歌单到网易云收听。');
       }
     };
   }, []);
@@ -124,7 +131,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       if (!response.ok) throw new Error('歌单暂时连接不上，请稍后重试。');
       const data = await response.json() as { tracks?: MusicSong[]; name?: string };
       if (!Array.isArray(data.tracks) || !data.tracks.length) throw new Error('歌单里暂时没有歌曲。');
-      const tracks = data.tracks.filter(song => /^\d+$/.test(song.id) && song.src.startsWith('/api/music/stream?'));
+      const tracks = data.tracks.filter(song => /^\d+$/.test(song.id) && (song.src.startsWith('/music/') || song.src.startsWith('/api/music/stream?')));
       if (!tracks.length) throw new Error('歌单里暂时没有可播放的歌曲。');
       if (abort.signal.aborted) return;
       tracksRef.current = tracks; setPlaylist(tracks);

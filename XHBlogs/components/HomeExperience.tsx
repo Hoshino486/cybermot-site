@@ -3,13 +3,13 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
 import Navbar from './Navbar';
-import BilibiliCard from './BilibiliCard';
+import BilibiliSection from './BilibiliSection';
 import { useSitePreferences } from './SitePreferencesProvider';
 import { openMusicPlayer } from './NeteasePlayer';
 import { siteConfig } from '../siteConfig';
 import type { PostSummary } from '../lib/posts';
 
-const chapters = [{ id: 'home', title: '序章', english: 'PROLOGUE' }, { id: 'journal', title: '记录', english: 'JOURNAL' }, { id: 'universe', title: '回响', english: 'UNIVERSE' }];
+const chapters = [{ id: 'home', title: '序章', english: 'PROLOGUE' }, { id: 'journal', title: '记录', english: 'JOURNAL' }, { id: 'universe', title: '回响', english: 'UNIVERSE' }, { id: 'bilibili', title: '频道', english: 'BILIBILI' }];
 const destinations = [
   { title: '灵感工坊', subtitle: '把想象，变成现实', href: '/projects', icon: Code2, number: '01' },
   { title: '瞬间收藏', subtitle: '那些不想忘记的日常', href: '/moments', icon: Feather, number: '02' },
@@ -105,12 +105,14 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
       <section className="universe-section cm-section" id="universe" aria-labelledby="universe-title">
         <div className="section-topline"><span>CHAPTER 03 / UNIVERSE</span><span>MORE THAN JUST WORDS.</span></div>
         <div className="section-heading"><div><span className="section-kicker">在这里，还可以找到…</span><h2 id="universe-title">我的小小<span>宇宙</span><Orbit size={36}/></h2></div><span className="universe-note">自由生长，持续更新。</span></div>
-        <div className="universe-grid"><div className="destination-grid">{destinations.map(item => <Link key={item.href} className="destination-card" href={item.href}><div><item.icon size={25} strokeWidth={1.3}/><span>{item.number} / EXPLORE</span></div><h3>{item.title}<ArrowUpRight size={20}/></h3><p>{item.subtitle}</p></Link>)}<BilibiliCard /></div>
+        <div className="universe-grid"><div className="destination-grid">{destinations.map(item => <Link key={item.href} className="destination-card" href={item.href}><div><item.icon size={25} strokeWidth={1.3}/><span>{item.number} / EXPLORE</span></div><h3>{item.title}<ArrowUpRight size={20}/></h3><p>{item.subtitle}</p></Link>)}</div>
           <button className="music-feature" onClick={openMusicPlayer}><div className="music-feature-top"><Headphones size={18}/><span>SOUNDTRACK OF MY LIFE</span><ArrowUpRight size={20}/></div><div className="vinyl"><div><img src={siteConfig.avatarUrl} alt=""/><i/></div></div><div className="music-feature-text"><span>网易云音乐 / MY PLAYLIST</span><h3>听见，<br/>另一个世界。</h3><p>给生活一点背景音乐。</p><span className="listen-button"><Play size={13} fill="currentColor"/> 打开我的歌单</span></div></button>
         </div>
         <div className="connection-strip"><div><Compass size={23} strokeWidth={1.3}/><p>相遇本身，就是一件很浪漫的事。<span>让我们在互联网的某个角落，交换彼此的宇宙。</span></p></div><Link href="/friends">去朋友家坐坐 <ArrowUpRight size={18}/></Link></div>
         <div className="more-links"><Link href="/chatter">碎碎念 <ChevronRight size={13}/></Link><Link href="/timeline">时间轴 <ChevronRight size={13}/></Link><Link href="/music">音乐馆 <ChevronRight size={13}/></Link><a href="/feed.xml">RSS 订阅 <Rss size={13}/></a></div>
       </section>
+
+      <BilibiliSection />
     </main>
     <footer className="cm-footer"><div className="footer-brand"><span className="cm-mark"><i/></span><b>CyberMot<span>记录刹那，连接无限。</span></b></div><div><span>© 2026 CyberMot · 赛博刹那</span><span>基于 <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener noreferrer">XHBlogs</a> · CC BY-NC 4.0</span></div><button onClick={() => visit('home')}>BACK TO TOP <MoveUpRight size={15}/></button></footer>
   </div>;

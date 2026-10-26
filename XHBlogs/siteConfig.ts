@@ -47,6 +47,8 @@ export const siteConfig = {
   cloudMusicIds: [],
   // B 站空间 UID（space.bilibili.com/<uid>），首页的 B 站卡片靠它取头像与粉丝数
   bilibiliUid: "1818296505",
+  // 首页展示的投稿，按顺序取前 3 个；新增视频在这里加 BV 号后跑 npm run sync:bilibili
+  bilibiliVideos: ["BV1BSh265EDu"],
   social: {
     github: "",
     gitee: "",

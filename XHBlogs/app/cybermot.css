@@ -20,20 +20,31 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{font-family:Arial,'Mic
 @media(min-width:651px){.hero-bottom{padding-right:160px}}
 /* Stationary scenery and its independently animated atmosphere: anime-backdrop.css. */
 
-/* ---- B 站卡片：放在「我的小小宇宙」四宫格下方，占满两列 ---- */
-.destination-grid .bilibili-card{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:18px 22px;background:rgba(255,255,255,.5);border:1px solid var(--cm-line);transition:background .3s,transform .3s}
-.destination-grid .bilibili-card:hover{background:rgba(255,255,255,.9);transform:translateY(-3px)}
-.bilibili-avatar{width:52px;height:52px;flex-shrink:0;border-radius:50%;overflow:hidden;border:1px solid var(--cm-line);background:rgba(255,255,255,.6)}
-.bilibili-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+/* ---- B 站板块：独立一章，放在「回响」之后 ---- */
+.bilibili-section{padding-top:20px;padding-bottom:70px}
+.bilibili-board{margin-top:35px;padding:26px 28px;background:rgba(255,255,255,.45);border:1px solid var(--cm-line)}
+.bilibili-profile{display:flex;align-items:center;gap:20px;padding-bottom:22px;border-bottom:1px solid var(--cm-line)}
+.bilibili-avatar{width:64px;height:64px;flex-shrink:0;border-radius:50%;object-fit:cover;border:1px solid var(--cm-line);background:rgba(255,255,255,.6)}
 .bilibili-meta{flex:1;min-width:0}
-.bilibili-meta b{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;letter-spacing:1px}
-.bilibili-meta b em{font:7px var(--font-geist-mono);font-style:normal;letter-spacing:1px;color:var(--cm-muted);padding:3px 6px;border:1px solid var(--cm-line);border-radius:2px}
-.bilibili-meta p{margin-top:7px;font-size:9px;letter-spacing:1px;color:var(--cm-muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.bilibili-stats{display:flex;gap:20px;flex-shrink:0}
+.bilibili-meta b{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:400;letter-spacing:2px}
+.bilibili-meta b em{font:7px var(--font-geist-mono);font-style:normal;letter-spacing:1px;color:var(--cm-muted);padding:3px 7px;border:1px solid var(--cm-line)}
+.bilibili-meta p{margin-top:10px;font-size:10px;line-height:1.9;letter-spacing:1px;color:var(--cm-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bilibili-stats{display:flex;gap:26px;flex-shrink:0}
 .bilibili-stats div{text-align:center}
-.bilibili-stats b{display:block;font-size:15px;font-weight:400;letter-spacing:.5px}
-.bilibili-stats span{font:7px var(--font-geist-mono);letter-spacing:1px;color:var(--cm-muted)}
-.bilibili-go{display:flex;align-items:center;gap:7px;flex-shrink:0;font-size:9px;letter-spacing:1px;padding:8px 12px;border:1px solid var(--cm-line);color:var(--cm-accent)}
-.dark .destination-grid .bilibili-card{background:rgba(36,55,67,.55)}
-.dark .destination-grid .bilibili-card:hover{background:rgba(45,71,87,.9)}
-@media(max-width:650px){.destination-grid .bilibili-card{flex-wrap:wrap;gap:12px;padding:15px 16px}.bilibili-stats{width:100%;justify-content:space-between;gap:8px}.bilibili-go{width:100%;justify-content:center}.bilibili-meta p{font-size:8px}}
+.bilibili-stats b{display:block;font-size:20px;font-weight:300;letter-spacing:1px}
+.bilibili-stats span{display:block;margin-top:4px;font:7px var(--font-geist-mono);letter-spacing:1.5px;color:var(--cm-muted)}
+.bilibili-go{display:flex;align-items:center;gap:8px;flex-shrink:0;padding:10px 16px;border:1px solid var(--cm-line);color:var(--cm-accent);font-size:9px;letter-spacing:1px;transition:background .3s,color .3s}
+.bilibili-profile:hover .bilibili-go{background:var(--cm-accent);color:#fff}
+.bilibili-videos{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;margin-top:24px}
+.bilibili-video{display:flex;flex-direction:column;gap:10px;min-width:0}
+.bilibili-video-cover{position:relative;display:block;aspect-ratio:16/9;overflow:hidden;border:1px solid var(--cm-line);background:#0f1c24}
+.bilibili-video-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s,filter .7s;filter:saturate(.85)}
+.bilibili-video:hover .bilibili-video-cover img{transform:scale(1.05);filter:saturate(1)}
+.bilibili-video-cover em{position:absolute;right:7px;bottom:7px;font:8px var(--font-geist-mono);font-style:normal;letter-spacing:.5px;color:#fff;background:rgba(12,26,34,.72);padding:2px 6px}
+.bilibili-video-cover i{position:absolute;inset:0;display:grid;place-items:center;color:#fff;background:rgba(12,26,34,.28);opacity:0;transition:opacity .4s}
+.bilibili-video:hover .bilibili-video-cover i{opacity:1}
+.bilibili-video b{font-size:13px;font-weight:500;line-height:1.6;letter-spacing:.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bilibili-video-meta{font:8px var(--font-geist-mono);letter-spacing:1px;color:var(--cm-muted)}
+.dark .bilibili-board{background:rgba(36,55,67,.45)}
+@media(max-width:900px){.bilibili-profile{flex-wrap:wrap;gap:16px}.bilibili-stats{width:100%;justify-content:space-between}.bilibili-go{width:100%;justify-content:center}}
+@media(max-width:650px){.bilibili-board{padding:18px 16px;margin-top:25px}.bilibili-meta b{font-size:16px}.bilibili-avatar{width:52px;height:52px}.bilibili-videos{grid-template-columns:1fr;gap:18px}}

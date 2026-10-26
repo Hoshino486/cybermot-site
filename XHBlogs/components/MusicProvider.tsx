@@ -10,7 +10,6 @@ interface MusicContextType {
   playlist: MusicSong[]; playlistTitle: string; currentIndex: number; currentSong: MusicSong | undefined;
   isPlaying: boolean; progress: number; currentTime: number; duration: number; currentLyric: string;
   isLoading: boolean; status: MusicStatus; errorMessage: string; volume: number; isMuted: boolean; playMode: PlayMode;
-  soundLocked: boolean;
   autoplay: boolean; setAutoplay: (enabled: boolean) => void; togglePlay: () => void; nextSong: () => void;
   prevSong: () => void; handleSeek: (event: ChangeEvent<HTMLInputElement>) => void; playSong: (index: number) => void;
   setVolume: (value: number) => void; toggleMute: () => void; togglePlayMode: () => void; retry: () => void;
@@ -46,7 +45,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [errorMessage, setErrorMessage] = useState('');
   const [volume, setVolumeState] = useState(.45);
   const [isMuted, setIsMuted] = useState(false);
-  const [soundLocked, setSoundLocked] = useState(false);
   const [autoplay, setAutoplayState] = useState(true);
   const [playMode, setPlayMode] = useState<PlayMode>('loop');
   const [lyrics, setLyrics] = useState<Lyric[]>([]);
@@ -61,7 +59,6 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const generation = useRef(0);
   const failRef = useRef<() => void>(() => {});
   const selectRef = useRef<(index: number, play: boolean) => void>(() => {});
-  const lockedRef = useRef(false);
 
   const attemptPlay = useCallback(() => {
     const audio = audioRef.current;
@@ -72,16 +69,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     promise?.catch((error: unknown) => {
       if (token !== generation.current || !wantedRef.current) return;
       const name = error instanceof DOMException ? error.name : '';
-      if (name === 'NotAllowedError') {
-        // Every browser refuses audible autoplay before the first gesture. Start the
-        // track muted instead so the page is already playing, then unmute on the first
-        // interaction (pointer/keydown listeners below).
-        lockedRef.current = true;
-        setSoundLocked(true);
-        audio.muted = true;
-        setIsMuted(true);
-        audio.play()?.catch(() => { setIsPlaying(false); setStatus('blocked'); });
-      } else if (name !== 'AbortError') failRef.current();
+      if (name === 'NotAllowedError') { setIsPlaying(false); setStatus('blocked'); }
+      else if (name !== 'AbortError') failRef.current();
     });
   }, []);
   const selectSong = useCallback((index: number, play: boolean) => {
@@ -124,17 +113,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     const mode = read('mode', 'loop');
     if (mode === 'single' || mode === 'random' || mode === 'loop') { modeRef.current = mode; setPlayMode(mode); }
     const unlock = (event: Event) => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      // The first interaction restores sound no matter where on the page it lands.
-      if (lockedRef.current) {
-        lockedRef.current = false; setSoundLocked(false);
-        audio.muted = false; setIsMuted(false);
-        if (audio.paused && wantedRef.current && !audio.error) attemptPlay();
-        return;
-      }
       if (event.target instanceof Element && event.target.closest('[data-music-control], [data-music-preference]')) return;
-      if (wantedRef.current && audio.paused && !audio.error) attemptPlay();
+      if (wantedRef.current && audioRef.current?.paused && !audioRef.current.error) attemptPlay();
     };
     document.addEventListener('pointerdown', unlock, true);
     document.addEventListener('keydown', unlock, true);
@@ -185,14 +165,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     else attemptPlay();
   }, [attemptPlay, selectSong]);
   const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio && !audio.paused) { pause(); return; }
-    if (lockedRef.current) {
-      lockedRef.current = false; setSoundLocked(false);
-      if (audio) audio.muted = false;
-      setIsMuted(false);
-    }
-    resume();
+    if (audioRef.current && !audioRef.current.paused) pause(); else resume();
   }, [pause, resume]);
   const move = useCallback((direction: number) => {
     const count = tracksRef.current.length; if (!count) return;
@@ -217,12 +190,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     const bounded = Math.max(0, Math.min(1, value));
     setVolumeState(bounded); save('volume', String(bounded));
     if (audioRef.current) audioRef.current.volume = bounded;
-    if (bounded > 0) { lockedRef.current = false; setSoundLocked(false); setIsMuted(false); save('muted', 'false'); if (audioRef.current) audioRef.current.muted = false; }
+    if (bounded > 0) { setIsMuted(false); save('muted', 'false'); if (audioRef.current) audioRef.current.muted = false; }
   }, []);
   const toggleMute = useCallback(() => {
-    const muted = !audioRef.current?.muted;
-    lockedRef.current = false; setSoundLocked(false);
-    setIsMuted(muted); save('muted', String(muted));
+    const muted = !audioRef.current?.muted; setIsMuted(muted); save('muted', String(muted));
     if (audioRef.current) audioRef.current.muted = muted;
   }, []);
   const togglePlayMode = useCallback(() => {
@@ -250,10 +221,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     return () => { for (const [action] of handlers) { try { navigator.mediaSession.setActionHandler(action, null); } catch {} } };
   }, [currentSong, playlistTitle, resume, pause, move]);
   const activeLyric = lyrics.filter(line => line.time <= currentTime).at(-1)?.text;
-  const currentLyric = activeLyric || (soundLocked ? '已静音播放 · 轻触任意处开启声音' : status === 'blocked' ? '轻触页面，音乐即刻继续' : status === 'error' ? errorMessage : status === 'loading' ? '正在连接音乐…' : '给此刻，配一段旋律。');
+  const currentLyric = activeLyric || (status === 'blocked' ? '轻触页面，音乐即刻继续' : status === 'error' ? errorMessage : status === 'loading' ? '正在连接音乐…' : '给此刻，配一段旋律。');
   return <MusicContext.Provider value={{ playlist, playlistTitle, currentIndex, currentSong, isPlaying, currentTime, duration,
     progress: duration > 0 ? currentTime / duration * 100 : 0, currentLyric, isLoading: status === 'loading', status, errorMessage,
-    soundLocked, volume, isMuted, playMode, autoplay, setAutoplay, togglePlay, nextSong: () => move(1), prevSong: () => move(-1),
+    volume, isMuted, playMode, autoplay, setAutoplay, togglePlay, nextSong: () => move(1), prevSong: () => move(-1),
     handleSeek, playSong, setVolume, toggleMute, togglePlayMode, retry }}>
     {children}
     <audio ref={audioRef} data-testid="site-audio" preload="auto" onTimeUpdate={timeUpdate} onLoadedMetadata={timeUpdate}

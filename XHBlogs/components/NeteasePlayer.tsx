@@ -17,7 +17,7 @@ export default function NeteasePlayer() {
     return () => { window.removeEventListener('cybermot:music', show); window.removeEventListener('keydown', key); };
   }, [open]);
   const modeText = music.playMode === 'loop' ? '列表循环' : music.playMode === 'single' ? '单曲循环' : '随机播放';
-  const statusText = music.status === 'blocked' ? '轻触页面即可播放' : music.status === 'error' ? '音源暂不可用' : music.status === 'loading' ? '正在连接音乐…' : music.isPlaying ? music.currentSong?.artist : '已暂停 · 随时继续';
+  const statusText = music.soundLocked ? '轻触任意处开启声音' : music.status === 'blocked' ? '轻触页面即可播放' : music.status === 'error' ? '音源暂不可用' : music.status === 'loading' ? '正在连接音乐…' : music.isPlaying ? music.currentSong?.artist : '已暂停 · 随时继续';
   return <aside className={'cm-audio ' + (open ? 'cm-audio-expanded' : '')} aria-label="全站音乐播放器" data-music-status={music.status}>
     {open && <section id="cm-playlist" className="cm-audio-panel" aria-label="网易云歌单">
       <div className="cm-audio-panel-heading"><span><ListMusic size={18}/> {music.playlistTitle}</span><button aria-label="收起歌单，继续播放" onClick={() => {setOpen(false); trigger.current?.focus();}}><ChevronDown size={18}/></button></div>

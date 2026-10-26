@@ -63,7 +63,7 @@ export default function BilibiliSection() {
                   <i><PlayCircle size={22} strokeWidth={1.2} /></i>
                 </span>
                 <b>{video.title}</b>
-                <span className="bilibili-video-meta">{video.date} · {compact(video.views)} 播放 · {compact(video.likes)} 赞</span>
+                <span className="bilibili-video-meta">{video.date} · {compact(video.views)} 播放</span>
               </a>
             ))}
           </div>

@@ -1,0 +1,113 @@
+{
+  "name": "赛博刹那",
+  "avatar": "/images/steam-avatar.jpg",
+  "state": "online",
+  "level": 31,
+  "url": "https://steamcommunity.com/profiles/76561199543091926/",
+  "recent": [
+    {
+      "appid": "730",
+      "name": "Counter-Strike 2",
+      "hours": 4834,
+      "last": "10 月 24 日",
+      "capsule": "/images/steam/730.jpg",
+      "url": "https://steamcommunity.com/app/730"
+    },
+    {
+      "appid": "550",
+      "name": "Left 4 Dead 2",
+      "hours": 56,
+      "last": "10 月 14 日",
+      "capsule": "/images/steam/550.jpg",
+      "url": "https://steamcommunity.com/app/550"
+    },
+    {
+      "appid": "1049590",
+      "name": "永恒轮回",
+      "hours": 2,
+      "last": "9 月 20 日",
+      "capsule": "/images/steam/1049590.jpg",
+      "url": "https://steamcommunity.com/app/1049590"
+    }
+  ],
+  "workshop": [
+    {
+      "id": "3818340815",
+      "title": "saibochana_Server",
+      "description": "自建服务器资源",
+      "cover": "/images/workshop/3818340815.jpg",
+      "role": "author",
+      "subs": 1,
+      "favorites": 0,
+      "views": 20,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3818340815"
+    },
+    {
+      "id": "3817448617",
+      "title": "ze_forhidden_slicoo_cn",
+      "description": "禁地斯狄科（普通版） 原作者：B站904975黑岩 由lopb进行CS2版本的移植与更新，由赛博刹那修复脚本更新 此地图需要CS2fix插件的服务器才能正常游玩",
+      "cover": "/images/workshop/3817448617.jpg",
+      "role": "author",
+      "subs": 42,
+      "favorites": 1,
+      "views": 135,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3817448617"
+    },
+    {
+      "id": "3815144923",
+      "title": "forhidden_slicoo_test",
+      "description": "test",
+      "cover": "/images/workshop/3815144923.jpg",
+      "role": "author",
+      "subs": 2,
+      "favorites": 0,
+      "views": 20,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3815144923"
+    },
+    {
+      "id": "3795959064",
+      "title": "Sekiro",
+      "description": "text",
+      "cover": "/images/workshop/3795959064.jpg",
+      "role": "author",
+      "subs": 0,
+      "favorites": 1,
+      "views": 13,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3795959064"
+    },
+    {
+      "id": "3724478747",
+      "title": "ze_demon_slayer",
+      "description": "ze_demon_slayer 鬼灭之刃 ==================================== 现地图包含： ·1个关卡 ·3个人类皮肤，2",
+      "cover": "/images/workshop/3724478747.jpg",
+      "role": "author",
+      "subs": 191,
+      "favorites": 3,
+      "views": 513,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3724478747"
+    },
+    {
+      "id": "3627807848",
+      "title": "ze_imperial_sanctum",
+      "description": "地图一共4关，目前完成了3关 目前的stage4是stage3的另一个结局,临时设置为stage4 部分材质和模型使用了其他地图的资源 需要使用CS2fix，并",
+      "cover": "/images/workshop/3627807848.jpg",
+      "role": "contributor",
+      "subs": 321,
+      "favorites": 2,
+      "views": 547,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3627807848"
+    },
+    {
+      "id": "3521710695",
+      "title": "ze_Sekiro",
+      "description": "ZE_SEKIRO 只狼 ==================================== 地图包含： ·2个主要BOSS ·4个人类神器与4个人类皮肤",
+      "cover": "/images/workshop/3521710695.jpg",
+      "role": "contributor",
+      "subs": 288,
+      "favorites": 9,
+      "views": 745,
+      "url": "https://steamcommunity.com/sharedfiles/filedetails/?id=3521710695"
+    }
+  ],
+  "updatedAt": "2026-10-26T12:09:34.163Z"
+}

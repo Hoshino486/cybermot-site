@@ -17,6 +17,7 @@
     "test:e2e": "playwright test",
     "sync:music": "node scripts/sync-music.mjs",
     "sync:bilibili": "node scripts/sync-bilibili.mjs",
+    "sync:steam": "node scripts/sync-steam.mjs",
     "screenshots": "node scripts/preview-screenshots.mjs"
   },
   "dependencies": {

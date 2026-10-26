@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
 import Navbar from './Navbar';
 import BilibiliSection from './BilibiliSection';
+import SteamSection from './SteamSection';
 import { useSitePreferences } from './SitePreferencesProvider';
 import { openMusicPlayer } from './NeteasePlayer';
 import { siteConfig } from '../siteConfig';
 import type { PostSummary } from '../lib/posts';
 
-const chapters = [{ id: 'home', title: '序章', english: 'PROLOGUE' }, { id: 'journal', title: '记录', english: 'JOURNAL' }, { id: 'universe', title: '回响', english: 'UNIVERSE' }, { id: 'bilibili', title: '频道', english: 'BILIBILI' }];
+const chapters = [{ id: 'home', title: '序章', english: 'PROLOGUE' }, { id: 'journal', title: '记录', english: 'JOURNAL' }, { id: 'universe', title: '回响', english: 'UNIVERSE' }, { id: 'bilibili', title: '频道', english: 'BILIBILI' }, { id: 'steam', title: '游戏', english: 'STEAM' }];
 const destinations = [
   { title: '灵感工坊', subtitle: '把想象，变成现实', href: '/projects', icon: Code2, number: '01' },
   { title: '瞬间收藏', subtitle: '那些不想忘记的日常', href: '/moments', icon: Feather, number: '02' },
@@ -113,6 +114,8 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
       </section>
 
       <BilibiliSection />
+
+      <SteamSection />
     </main>
     <footer className="cm-footer"><div className="footer-brand"><span className="cm-mark"><i/></span><b>CyberMot<span>记录刹那，连接无限。</span></b></div><div><span>© 2026 CyberMot · 赛博刹那</span><span>基于 <a href="https://github.com/heiehiehi/XinghuisamaBlogs" target="_blank" rel="noopener noreferrer">XHBlogs</a> · CC BY-NC 4.0</span></div><button onClick={() => visit('home')}>BACK TO TOP <MoveUpRight size={15}/></button></footer>
   </div>;

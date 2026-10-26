@@ -148,14 +148,14 @@ html.dark{--day-glow-scale:.62}
 @media(prefers-reduced-motion:reduce){.hero-copy h1{transform:none;transition:none}.hero-copy h1::before,.hero-copy h1::after{animation:none}}
 @media(max-width:650px){.hero-copy h1{transform:none}}
 /* ---- 标题：Cyberpunk 2077 式硬边挤出立体字 ---- */
-.hero-copy h1{color:#f6fdff;-webkit-text-stroke:1.4px rgba(4,14,20,.62);text-shadow:2px 2px 0 #041017,4px 4px 0 #05131b,6px 6px 0 #071820,8px 8px 0 #091d26,10px 10px 0 #0b222c,12px 12px 0 rgba(8,26,35,.92),14px 14px 0 rgba(95,240,255,.12),0 0 44px rgba(95,240,255,.16);transform:perspective(1400px) rotateY(calc(-2deg + var(--mx,0) * -3deg)) rotateX(calc(1deg + var(--my,0) * 2deg)) skewX(-3deg);transition:transform .5s cubic-bezier(.22,.61,.36,1)}
+.hero-copy h1{color:#f7fdff;-webkit-text-stroke:1.2px rgba(6,22,30,.55);text-shadow:2px 2px 0 #0a212b,4px 4px 0 #0c2630,6px 6px 0 #0f2d38,8px 8px 0 rgba(14,42,52,.95),10px 10px 0 rgba(20,58,68,.85),12px 12px 0 rgba(95,240,255,.18),0 0 40px rgba(95,240,255,.14);transform:perspective(1400px) rotateY(calc(-2deg + var(--mx,0) * -3deg)) rotateX(calc(1deg + var(--my,0) * 2deg)) skewX(-2.2deg);transition:transform .5s cubic-bezier(.22,.61,.36,1)}
 .hero-copy h1::before,.hero-copy h1::after{content:attr(data-text);position:absolute;left:0;top:0;pointer-events:none;font:inherit;letter-spacing:inherit;white-space:nowrap;mix-blend-mode:screen;opacity:0;text-shadow:none;-webkit-text-stroke:0}
 .hero-copy h1::before{color:#ff2f8e;clip-path:inset(38% 0 46% 0);animation:cp-slice-a 6.5s steps(1,end) infinite}
 .hero-copy h1::after{color:#5ff0ff;clip-path:inset(62% 0 22% 0);animation:cp-slice-b 5.2s steps(1,end) infinite}
 @keyframes cp-slice-a{0%,91%,100%{opacity:0;transform:translate3d(0,0,0)}92%{opacity:.9;transform:translate3d(-7px,0,0)}93%{opacity:.9;transform:translate3d(4px,0,0)}94%{opacity:0;transform:translate3d(0,0,0)}}
 @keyframes cp-slice-b{0%,86%,100%{opacity:0;transform:translate3d(0,0,0)}87%{opacity:.85;transform:translate3d(6px,0,0)}88%{opacity:.85;transform:translate3d(-5px,0,0)}89%{opacity:0;transform:translate3d(0,0,0)}}
-.hero-copy h1>span{text-shadow:inherit}
-.hero-copy h1>i{transform:translateZ(30px) rotate(12deg);text-shadow:1px 1px 0 #041017,2px 2px 0 #071820,0 0 16px rgba(120,240,255,.75)}
+.hero-copy h1>span{font-weight:600;text-shadow:inherit}
+.hero-copy h1>i{color:#8df6ff;font-size:20px;transform:translateZ(30px) rotate(12deg);text-shadow:0 0 12px rgba(95,240,255,.95),0 0 26px rgba(95,240,255,.55)}
 .hero:hover .hero-copy h1{transform:perspective(1400px) rotateY(calc(0deg + var(--mx,0) * -5deg)) rotateX(calc(0deg + var(--my,0) * 3deg)) skewX(-3deg)}
 @media(prefers-reduced-motion:reduce){.hero-copy h1{transform:none}.hero-copy h1::before,.hero-copy h1::after{animation:none;opacity:0}}
-@media(max-width:650px){.hero-copy h1{transform:none;text-shadow:2px 2px 0 #041017,4px 4px 0 #071820,6px 6px 0 #0b222c,0 0 30px rgba(95,240,255,.14);-webkit-text-stroke:1px rgba(4,14,20,.55)}}
+@media(max-width:650px){.hero-copy h1{transform:none;text-shadow:2px 2px 0 #0a212b,4px 4px 0 #0f2d38,6px 6px 0 rgba(14,42,52,.9),0 0 26px rgba(95,240,255,.12);-webkit-text-stroke:1px rgba(6,22,30,.45)}.hero-copy h1>i{font-size:16px}}

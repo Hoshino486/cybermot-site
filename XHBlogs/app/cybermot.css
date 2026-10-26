@@ -116,3 +116,12 @@ html{scroll-behavior:smooth;scroll-padding-top:100px}body{font-family:Arial,'Mic
 @media(max-width:1200px){.steam-workshop-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:900px){.steam-profile{flex-wrap:wrap;gap:16px}.steam-stats{width:100%;justify-content:space-between}.steam-go{width:100%;justify-content:center}.steam-workshop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.steam-games{grid-template-columns:1fr}}
 @media(max-width:650px){.steam-board,.steam-workshop{padding:18px 16px;margin-top:25px}.steam-meta b{font-size:16px}.steam-avatar{width:52px;height:52px}.steam-workshop-grid{grid-template-columns:1fr}}
+/* ---- 背景光随真实时间流动：清晨偏暖 / 正午清亮 / 黄昏橙紫 / 夜里偏蓝 ---- */
+@property --day-glow-a{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,0)}
+@property --day-glow-b{syntax:'<color>';inherits:true;initial-value:rgba(255,255,255,0)}
+@property --day-glow-opacity{syntax:'<number>';inherits:true;initial-value:0}
+:root{--day-glow-a:rgba(255,255,255,0);--day-glow-b:rgba(255,255,255,0);--day-glow-opacity:0;--day-glow-scale:1;transition:--day-glow-a 8s linear,--day-glow-b 8s linear,--day-glow-opacity 8s linear}
+html.dark{--day-glow-scale:.62}
+.inner-backdrop::after,.scene-landscape::after,.scene-anime::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(155deg,var(--day-glow-a),var(--day-glow-b));opacity:calc(var(--day-glow-opacity) * var(--day-glow-scale));mix-blend-mode:soft-light}
+.inner-backdrop{isolation:isolate}
+@media(prefers-reduced-motion:reduce){:root{transition:none}}

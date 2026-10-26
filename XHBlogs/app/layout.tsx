@@ -6,6 +6,7 @@ import './feature-workspace.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { MusicProvider } from '../components/MusicProvider';
 import SiteShell from '../components/SiteShell';
+import DaylightLayer from '../components/DaylightLayer';
 import { SitePreferencesProvider } from '../components/SitePreferencesProvider';
 import { siteConfig } from '../siteConfig';
 
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="zh-CN" data-scroll-behavior="smooth" suppressHydrationWarning><body>
+    <DaylightLayer />
     <a className="skip-link" href="#page-content">跳至主要内容</a>
     <ThemeProvider><SitePreferencesProvider><MusicProvider><SiteShell>{children}</SiteShell></MusicProvider></SitePreferencesProvider></ThemeProvider>
   </body></html>;

@@ -69,7 +69,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
       timer = window.setTimeout(flick, 480 + Math.random() * 620);
     };
 
-    timer = window.setTimeout(flick, 900);
+    timer = window.setTimeout(flick, 1_900);
     return () => {
       alive = false;
       window.clearTimeout(timer);

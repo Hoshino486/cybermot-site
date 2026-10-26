@@ -188,6 +188,19 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
           ))}
         </AnimatePresence>
       </motion.div>
+
+      {filteredChatters.length === 0 && (
+        <div className="mx-auto mt-6 max-w-xl">
+          {searchQuery ? (
+            <p className="text-center text-sm font-medium text-slate-500 dark:text-slate-400">没有匹配的杂谈，换个词试试。</p>
+          ) : (
+            <div className="rounded-2xl border border-white/40 bg-white/40 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40">
+              <p className="mb-4 text-center text-sm font-medium text-slate-500 dark:text-slate-400">这一页还没有内容，先在这儿留句话吧。</p>
+              <CommentsEmbed pageId="/chatter" compact />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

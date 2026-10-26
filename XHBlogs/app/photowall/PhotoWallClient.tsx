@@ -144,6 +144,13 @@ export default function PhotoWallClient() {
                     在泰拉大陆的任何角落都没找到相关的记忆...
                   </div>
                 )}
+
+                {!activeQuery && albums.length === 0 && (
+                  <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-white/40 bg-white/40 p-4 backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40">
+                    <p className="mb-4 text-center text-sm font-medium text-slate-500 dark:text-slate-400">还没有相册，在第一张照片到来之前，先留句话吧。</p>
+                    <CommentsEmbed pageId="/photowall" compact />
+                  </div>
+                )}
               </div>
             </div>
           )}

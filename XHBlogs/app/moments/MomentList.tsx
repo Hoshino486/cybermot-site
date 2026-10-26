@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost } from 'lucide-react';
 import MomentComments from '../../components/MomentComments';
+import CommentsEmbed from '../../components/CommentsEmbed';
 
 function timeAgo(dateStr: string) {
   const date = new Date(dateStr);
@@ -192,6 +193,11 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
               <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tight">{searchQuery ? "没找到相关记忆" : "朋友圈空空如也"}</h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-lg leading-relaxed px-2 md:px-4">{searchQuery ? `尝试精简你的搜索词，或者换个心情再次出发。` : `还没有记录下任何生活碎片呢。`}</p>
             </motion.div>
+            {!searchQuery && (
+              <div className="mt-8 md:mt-12 w-full max-w-lg mx-auto">
+                <CommentsEmbed pageId="/moments" compact />
+              </div>
+            )}
           </div>
         )}
       </LayoutGroup>

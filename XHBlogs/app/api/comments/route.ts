@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { siteConfig } from '../../../siteConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-type CommentRow = { id: number; name: string; seed: number; body: string; created_at: number };
+type CommentRow = { id: number; name: string; seed: number; body: string; created_at: number; author: number };
 type Result<T> = { results?: T[]; meta?: { last_row_id?: number } };
 type Statement = {
   bind(...values: unknown[]): Statement;
@@ -13,6 +14,7 @@ type Statement = {
   run(): Promise<Result<never>>;
 };
 type Database = { prepare(sql: string): Statement };
+type Bindings = { COMMENTS_DB?: Database; AUTHOR_KEY?: string };
 
 const MAX_BODY = 500;
 const MAX_NAME = 16;
@@ -24,9 +26,13 @@ const BURST_LIMIT = 3;
 // while the Worker itself is allowed to run DDL against its own database.
 let schemaReady: Promise<void> | null = null;
 
-function database(): Database {
+function bindings(): Bindings {
   const { env } = getCloudflareContext();
-  const db = (env as { COMMENTS_DB?: Database }).COMMENTS_DB;
+  return env as Bindings;
+}
+
+function database(): Database {
+  const db = bindings().COMMENTS_DB;
   if (!db) throw new Error('COMMENTS_DB binding is missing');
   return db;
 }
@@ -44,10 +50,15 @@ function ensureSchema(db: Database) {
              body TEXT NOT NULL,
              created_at INTEGER NOT NULL,
              ip_hash TEXT,
-             approved INTEGER NOT NULL DEFAULT 1
+             approved INTEGER NOT NULL DEFAULT 1,
+             author INTEGER NOT NULL DEFAULT 0
            )`,
         )
         .run();
+      const columns = await db.prepare('PRAGMA table_info(comments)').all<{ name: string }>();
+      if (!(columns.results ?? []).some((column) => column.name === 'author')) {
+        await db.prepare('ALTER TABLE comments ADD COLUMN author INTEGER NOT NULL DEFAULT 0').run();
+      }
       await db.prepare('CREATE INDEX IF NOT EXISTS idx_comments_page ON comments (page, approved, created_at)').run();
       await db.prepare('CREATE INDEX IF NOT EXISTS idx_comments_ip ON comments (ip_hash, created_at)').run();
     })().catch((error: unknown) => {
@@ -71,7 +82,14 @@ async function hashIp(value: string): Promise<string> {
 }
 
 function present(row: CommentRow) {
-  return { id: String(row.id), name: row.name, seed: row.seed, body: row.body, createdAt: row.created_at };
+  return {
+    id: String(row.id),
+    name: row.name,
+    seed: row.seed,
+    body: row.body,
+    createdAt: row.created_at,
+    author: row.author === 1,
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -80,11 +98,11 @@ export async function GET(request: NextRequest) {
     await ensureSchema(db);
     const page = normalizePage(request.nextUrl.searchParams.get('page'));
     const { results } = await db
-      .prepare('SELECT id, name, seed, body, created_at FROM comments WHERE page = ? AND approved = 1 ORDER BY created_at DESC LIMIT ?')
+      .prepare('SELECT id, name, seed, body, created_at, author FROM comments WHERE page = ? AND approved = 1 ORDER BY created_at DESC LIMIT ?')
       .bind(page, PAGE_LIMIT)
       .all<CommentRow>();
     return NextResponse.json(
-      { page, comments: (results ?? []).map(present) },
+      { page, authorMode: Boolean(bindings().AUTHOR_KEY), comments: (results ?? []).map(present) },
       { headers: { 'Cache-Control': 'no-store' } },
     );
   } catch {
@@ -98,16 +116,26 @@ export async function POST(request: NextRequest) {
     await ensureSchema(db);
 
     const payload = (await request.json().catch(() => null)) as
-      | { page?: unknown; name?: unknown; body?: unknown; seed?: unknown }
+      | { page?: unknown; name?: unknown; body?: unknown; seed?: unknown; key?: unknown }
       | null;
     if (!payload) return NextResponse.json({ error: '请求格式不对。' }, { status: 400 });
 
     const page = normalizePage(typeof payload.page === 'string' ? payload.page : null);
-    const name = String(payload.name ?? '').trim().slice(0, MAX_NAME);
     const body = String(payload.body ?? '').replace(/\r\n/g, '\n').trim();
-    if (!name) return NextResponse.json({ error: '还没有昵称。' }, { status: 400 });
     if (!body) return NextResponse.json({ error: '还没有写内容。' }, { status: 400 });
     if (body.length > MAX_BODY) return NextResponse.json({ error: `内容最多 ${MAX_BODY} 个字。` }, { status: 400 });
+
+    // The author may sign with their real name and avatar instead of the virtual one.
+    const authorKey = bindings().AUTHOR_KEY;
+    const suppliedKey = typeof payload.key === 'string' ? payload.key : '';
+    const isAuthor = Boolean(authorKey) && suppliedKey.length > 0 && suppliedKey === authorKey;
+    if (suppliedKey.length > 0 && !isAuthor) {
+      return NextResponse.json({ error: '作者密钥不正确。' }, { status: 403 });
+    }
+
+    const rawName = String(payload.name ?? '').trim().slice(0, MAX_NAME);
+    const name = isAuthor ? siteConfig.authorName : rawName;
+    if (!name) return NextResponse.json({ error: '还没有昵称。' }, { status: 400 });
 
     const seedValue = Number(payload.seed);
     const seed = Number.isFinite(seedValue) ? Math.abs(Math.trunc(seedValue)) % 100000 : 0;
@@ -125,13 +153,13 @@ export async function POST(request: NextRequest) {
 
     const createdAt = Date.now();
     const inserted = await db
-      .prepare('INSERT INTO comments (page, name, seed, body, created_at, ip_hash, approved) VALUES (?, ?, ?, ?, ?, ?, 1)')
-      .bind(page, name, seed, body, createdAt, ipHash)
+      .prepare('INSERT INTO comments (page, name, seed, body, created_at, ip_hash, approved, author) VALUES (?, ?, ?, ?, ?, ?, 1, ?)')
+      .bind(page, name, seed, body, createdAt, ipHash, isAuthor ? 1 : 0)
       .run();
 
     const id = inserted.meta?.last_row_id ?? 0;
     return NextResponse.json(
-      { comment: { id: String(id), name, seed, body, createdAt } },
+      { comment: { id: String(id), name, seed, body, createdAt, author: isAuthor } },
       { status: 201, headers: { 'Cache-Control': 'no-store' } },
     );
   } catch {

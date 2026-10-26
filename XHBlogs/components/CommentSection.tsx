@@ -4,11 +4,13 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { usePathname } from 'next/navigation';
 import { Loader2, MessageCircle, RefreshCw, Send } from 'lucide-react';
 import CatAvatar from './CatAvatar';
+import { siteConfig } from '../siteConfig';
 
-type Comment = { id: string; name: string; seed: number; body: string; createdAt: number };
+type Comment = { id: string; name: string; seed: number; body: string; createdAt: number; author?: boolean };
 type Identity = { name: string; seed: number };
 
 const STORAGE_KEY = 'cybermot:comment-identity';
+const AUTHOR_KEY_STORAGE = 'cybermot:author-key';
 const NAMES = ['橘子', '雪团', '黑糖', '白桃', '月见', '奶糖', '薄荷', '柚子', '可可', '焦糖', '云朵', '海盐', '抹茶', '蜜柑', '铃兰', '夜昙', '星星', '草莓', '墨鱼', '年糕'];
 const TAILS = ['', '子', '酱', '团', '饼', '丸'];
 const MAX_BODY = 500;
@@ -53,6 +55,10 @@ export default function CommentSection({ pageId, compact = false }: { pageId?: s
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [authorModeAvailable, setAuthorModeAvailable] = useState(false);
+  const [authorMode, setAuthorMode] = useState(false);
+  const [authorKey, setAuthorKey] = useState('');
+  const [keyDraft, setKeyDraft] = useState('');
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -60,6 +66,13 @@ export default function CommentSection({ pageId, compact = false }: { pageId?: s
     // 虚拟身份存在 localStorage 里，只能挂载后再读，所以这里必须同步 setState
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIdentity(readIdentity());
+    try {
+      const storedKey = localStorage.getItem(AUTHOR_KEY_STORAGE);
+      if (storedKey) {
+        setAuthorKey(storedKey);
+        setAuthorMode(true);
+      }
+    } catch {}
     return () => { mounted.current = false; };
   }, []);
 
@@ -67,10 +80,11 @@ export default function CommentSection({ pageId, compact = false }: { pageId?: s
     setLoading(true);
     try {
       const response = await fetch(`/api/comments?page=${encodeURIComponent(page)}`, { signal, cache: 'no-store' });
-      const data = (await response.json()) as { comments?: Comment[]; error?: string };
+      const data = (await response.json()) as { comments?: Comment[]; error?: string; authorMode?: boolean };
       if (!response.ok) throw new Error(data.error || '评论暂时加载不出来。');
       if (!mounted.current) return;
       setComments(Array.isArray(data.comments) ? data.comments : []);
+      setAuthorModeAvailable(Boolean(data.authorMode));
       setError('');
     } catch (problem) {
       if ((problem as Error).name === 'AbortError') return;
@@ -93,19 +107,28 @@ export default function CommentSection({ pageId, compact = false }: { pageId?: s
     if (!identity || sending) return;
     const text = body.trim();
     if (!text) { setError('先写点什么吧。'); return; }
+    if (authorMode && !authorKey) { setError('先填入作者密钥，或关掉作者模式。'); return; }
     setSending(true);
     setError('');
     try {
       const response = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page, name: (draftName ?? identity.name).trim() || identity.name, body: text, seed: identity.seed }),
+        body: JSON.stringify({
+          page,
+          name: authorMode ? undefined : (draftName ?? identity.name).trim() || identity.name,
+          body: text,
+          seed: identity.seed,
+          ...(authorMode ? { key: authorKey } : {}),
+        }),
       });
       const data = (await response.json()) as { comment?: Comment; error?: string };
       if (!response.ok || !data.comment) throw new Error(data.error || '评论没有送达。');
       setComments((current) => [data.comment as Comment, ...current]);
       setBody('');
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ name: (draftName ?? identity.name).trim() || identity.name, seed: identity.seed })); } catch {}
+      if (!authorMode) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ name: (draftName ?? identity.name).trim() || identity.name, seed: identity.seed })); } catch {}
+      }
     } catch (problem) {
       setError(problem instanceof Error ? problem.message : '评论没有送达。');
     } finally {
@@ -129,32 +152,89 @@ export default function CommentSection({ pageId, compact = false }: { pageId?: s
 
       <form onSubmit={submit} className="mb-8 rounded-2xl border border-white/40 bg-white/50 p-4 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-slate-900/40">
         <div className="mb-3 flex items-center gap-3">
-          {identity ? <CatAvatar seed={identity.seed} size={44} className="shrink-0 rounded-full" /> : <div className="h-11 w-11 shrink-0 rounded-full bg-slate-300/40" />}
+          {authorMode ? (
+            <img src={siteConfig.avatarUrl} alt="" className="h-11 w-11 shrink-0 rounded-full border border-white/60 object-cover" />
+          ) : identity ? (
+            <CatAvatar seed={identity.seed} size={44} className="shrink-0 rounded-full" />
+          ) : (
+            <div className="h-11 w-11 shrink-0 rounded-full bg-slate-300/40" />
+          )}
           <input
-            value={draftName ?? identity?.name ?? ''}
+            value={authorMode ? siteConfig.authorName : draftName ?? identity?.name ?? ''}
             onChange={(event) => setDraftName(event.target.value.slice(0, 16))}
+            readOnly={authorMode}
             maxLength={16}
             aria-label="你的昵称"
             placeholder="随便起个名字"
-            className="min-w-0 flex-1 rounded-full border border-white/50 bg-white/60 px-4 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-400 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+            className="min-w-0 flex-1 rounded-full border border-white/50 bg-white/60 px-4 py-2 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-indigo-400 read-only:text-slate-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
           />
-          <button
-            type="button"
-            onClick={reroll}
-            title="换一个虚拟身份"
-            aria-label="换一个虚拟身份"
-            className="shrink-0 rounded-full border border-white/50 bg-white/60 p-2 text-slate-500 transition hover:text-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-slate-400"
-          >
-            <RefreshCw size={15} />
-          </button>
+          {!authorMode && (
+            <button
+              type="button"
+              onClick={reroll}
+              title="换一个虚拟身份"
+              aria-label="换一个虚拟身份"
+              className="shrink-0 rounded-full border border-white/50 bg-white/60 p-2 text-slate-500 transition hover:text-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-slate-400"
+            >
+              <RefreshCw size={15} />
+            </button>
+          )}
         </div>
+
+        {authorModeAvailable && (
+          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl bg-slate-500/5 px-3 py-2 text-xs dark:bg-white/5">
+            <label className="inline-flex cursor-pointer items-center gap-2 font-medium text-slate-600 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={authorMode}
+                onChange={(event) => {
+                  const next = event.target.checked;
+                  setAuthorMode(next);
+                  if (!next) setAuthorKey('');
+                }}
+                className="h-3.5 w-3.5 accent-indigo-500"
+              />
+              以作者身份留言
+            </label>
+            {authorMode && !authorKey && (
+              <>
+                <input
+                  type="password"
+                  value={keyDraft}
+                  onChange={(event) => setKeyDraft(event.target.value)}
+                  placeholder="作者密钥"
+                  aria-label="作者密钥"
+                  className="w-32 rounded-md border border-white/50 bg-white/70 px-2 py-1 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-400 dark:border-white/10 dark:bg-slate-800/70 dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const value = keyDraft.trim();
+                    if (!value) return;
+                    setAuthorKey(value);
+                    setKeyDraft('');
+                    try { localStorage.setItem(AUTHOR_KEY_STORAGE, value); } catch {}
+                  }}
+                  className="rounded-md bg-indigo-500 px-2 py-1 text-xs font-bold text-white"
+                >
+                  记住
+                </button>
+              </>
+            )}
+            {authorMode && authorKey && (
+              <span className="text-emerald-600 dark:text-emerald-400">已切换为 {siteConfig.authorName}</span>
+            )}
+            {!authorMode && <span className="text-slate-400">默认匿名，随机猫娘署名</span>}
+          </div>
+        )}
+
         <textarea
           value={body}
           onChange={(event) => setBody(event.target.value.slice(0, MAX_BODY))}
           rows={compact ? 2 : 3}
           maxLength={MAX_BODY}
           aria-label="留言内容"
-          placeholder="说点什么，匿名的猫娘会替你署名。"
+          placeholder={authorMode ? '以作者身份说点什么…' : '说点什么，匿名的猫娘会替你署名。'}
           className="w-full resize-none rounded-xl border border-white/50 bg-white/60 px-4 py-3 text-sm leading-relaxed text-slate-800 outline-none focus:ring-2 focus:ring-indigo-400 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
         />
         <div className="mt-3 flex items-center justify-between gap-3">
@@ -179,11 +259,18 @@ export default function CommentSection({ pageId, compact = false }: { pageId?: s
       ) : (
         <ul className="space-y-4">
           {comments.map((item) => (
-            <li key={item.id} className="flex gap-3 rounded-2xl border border-white/40 bg-white/40 p-4 backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/30">
-              <CatAvatar seed={item.seed} size={40} className="shrink-0 self-start rounded-full" />
+            <li key={item.id} className={`flex gap-3 rounded-2xl border p-4 backdrop-blur-sm ${item.author ? 'border-indigo-400/40 bg-indigo-500/10 dark:border-indigo-400/30 dark:bg-indigo-500/10' : 'border-white/40 bg-white/40 dark:border-white/10 dark:bg-slate-900/30'}`}>
+              {item.author ? (
+                <img src={siteConfig.avatarUrl} alt="" className="h-10 w-10 shrink-0 self-start rounded-full border border-white/60 object-cover" />
+              ) : (
+                <CatAvatar seed={item.seed} size={40} className="shrink-0 self-start rounded-full" />
+              )}
               <div className="min-w-0">
                 <div className="mb-1 flex flex-wrap items-baseline gap-2">
                   <b className="text-sm text-slate-800 dark:text-slate-100">{item.name}</b>
+                  {item.author && (
+                    <span className="rounded-md bg-indigo-500/15 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-indigo-600 dark:text-indigo-300">作者</span>
+                  )}
                   <time className="text-xs text-slate-400" dateTime={new Date(item.createdAt).toISOString()}>{relativeTime(item.createdAt)}</time>
                 </div>
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300">{item.body}</p>

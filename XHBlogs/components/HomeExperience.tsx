@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
 import Navbar from './Navbar';
+import BilibiliCard from './BilibiliCard';
 import { useSitePreferences } from './SitePreferencesProvider';
 import { openMusicPlayer } from './NeteasePlayer';
 import { siteConfig } from '../siteConfig';
@@ -104,7 +105,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
       <section className="universe-section cm-section" id="universe" aria-labelledby="universe-title">
         <div className="section-topline"><span>CHAPTER 03 / UNIVERSE</span><span>MORE THAN JUST WORDS.</span></div>
         <div className="section-heading"><div><span className="section-kicker">在这里，还可以找到…</span><h2 id="universe-title">我的小小<span>宇宙</span><Orbit size={36}/></h2></div><span className="universe-note">自由生长，持续更新。</span></div>
-        <div className="universe-grid"><div className="destination-grid">{destinations.map(item => <Link key={item.href} className="destination-card" href={item.href}><div><item.icon size={25} strokeWidth={1.3}/><span>{item.number} / EXPLORE</span></div><h3>{item.title}<ArrowUpRight size={20}/></h3><p>{item.subtitle}</p></Link>)}</div>
+        <div className="universe-grid"><div className="destination-grid">{destinations.map(item => <Link key={item.href} className="destination-card" href={item.href}><div><item.icon size={25} strokeWidth={1.3}/><span>{item.number} / EXPLORE</span></div><h3>{item.title}<ArrowUpRight size={20}/></h3><p>{item.subtitle}</p></Link>)}<BilibiliCard /></div>
           <button className="music-feature" onClick={openMusicPlayer}><div className="music-feature-top"><Headphones size={18}/><span>SOUNDTRACK OF MY LIFE</span><ArrowUpRight size={20}/></div><div className="vinyl"><div><img src={siteConfig.avatarUrl} alt=""/><i/></div></div><div className="music-feature-text"><span>网易云音乐 / MY PLAYLIST</span><h3>听见，<br/>另一个世界。</h3><p>给生活一点背景音乐。</p><span className="listen-button"><Play size={13} fill="currentColor"/> 打开我的歌单</span></div></button>
         </div>
         <div className="connection-strip"><div><Compass size={23} strokeWidth={1.3}/><p>相遇本身，就是一件很浪漫的事。<span>让我们在互联网的某个角落，交换彼此的宇宙。</span></p></div><Link href="/friends">去朋友家坐坐 <ArrowUpRight size={18}/></Link></div>

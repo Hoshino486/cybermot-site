@@ -45,6 +45,8 @@ export const siteConfig = {
     "2068215868": "/music/2068215868.mp3"
   },
   cloudMusicIds: [],
+  // B 站空间 UID（space.bilibili.com/<uid>），首页的 B 站卡片靠它取头像与粉丝数
+  bilibiliUid: "1818296505",
   social: {
     github: "",
     gitee: "",

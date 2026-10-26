@@ -27,6 +27,55 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
   const [category, setCategory] = useState('全部');
   const tags = ['全部', ...Array.from(new Set(posts.flatMap(post => post.tags.filter(tag => tag !== '示例')))).slice(0, 4)];
   const visiblePosts = category === '全部' ? posts : posts.filter(post => post.tags.includes(category));
+  // 标题故障：位置每次随机，节奏也随机，比固定 CSS 动画更像信号干扰
+  useEffect(() => {
+    const title = document.getElementById('hero-title') as HTMLElement | null;
+    if (!title) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let timer = 0;
+    let alive = true;
+    const randomBand = () => {
+      const top = 4 + Math.random() * 68;
+      const height = 5 + Math.random() * 13;
+      return { top, bottom: Math.max(0, 100 - top - height) };
+    };
+
+    const flick = () => {
+      if (!alive) return;
+      if (!document.documentElement.classList.contains('motion-off')) {
+        const first = randomBand();
+        const second = randomBand();
+        title.style.setProperty('--g-top', `${first.top.toFixed(1)}%`);
+        title.style.setProperty('--g-bottom', `${first.bottom.toFixed(1)}%`);
+        title.style.setProperty('--g2-top', `${second.top.toFixed(1)}%`);
+        title.style.setProperty('--g2-bottom', `${second.bottom.toFixed(1)}%`);
+        title.style.setProperty('--g-x', `${(Math.random() * 22 - 11).toFixed(1)}px`);
+        title.style.setProperty('--g2-x', `${(Math.random() * 22 - 11).toFixed(1)}px`);
+        title.classList.add('is-glitching');
+        window.setTimeout(() => {
+          if (!alive) return;
+          title.classList.remove('is-glitching');
+          // 有时补一下短促的第二闪，像信号没接稳
+          if (Math.random() > 0.55) {
+            window.setTimeout(() => {
+              if (!alive) return;
+              title.classList.add('is-glitching');
+              window.setTimeout(() => title.classList.remove('is-glitching'), 60);
+            }, 70);
+          }
+        }, 80 + Math.random() * 70);
+      }
+      timer = window.setTimeout(flick, 480 + Math.random() * 620);
+    };
+
+    timer = window.setTimeout(flick, 900);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+      title.classList.remove('is-glitching');
+    };
+  }, []);
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });

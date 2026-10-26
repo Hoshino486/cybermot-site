@@ -12,9 +12,10 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "cybermot-blog"
+      "service": "cybermot-site"
     }
   ]
-  // Add bomber.asia through the Cloudflare dashboard after verifying the preview.
-  // "routes": [{ "pattern": "bomber.asia", "custom_domain": true }]
+  // The Worker name and the self-reference binding must both point at
+  // cybermot-site: that is the account's only Worker and the one the
+  // cybermot.bomber.asia custom domain is attached to.
 }

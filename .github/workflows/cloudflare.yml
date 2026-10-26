@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       deploy:
-        description: "Deploy to the cybermot-blog Cloudflare Worker"
+        description: "Deploy to the cybermot-site Cloudflare Worker"
         required: true
         default: false
         type: boolean

@@ -66,7 +66,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
         <div className="hero-inner">
           <div className="hero-copy">
             <div className="hero-eyebrow"><span className="live-dot"/> HELLO, WORLD. <span className="eyebrow-line"/> 很高兴在这里遇见你</div>
-            <h1 id="hero-title">赛博<span>刹那</span><i>✦</i></h1>
+            <h1 id="hero-title" data-text="赛博刹那">赛博<span>刹那</span><i>✦</i></h1>
             <div className="hero-english">CYBERMOT<span>THE MOMENT IS INFINITE.</span></div>
             <p className="hero-description">在数字世界，收藏每一个<br className="desktop-break"/>值得停留的<span>瞬间。</span></p>
             <div className="hero-actions"><button className="primary-action" onClick={() => visit('journal')}>开始探索 <ArrowDown size={17}/></button><Link className="secondary-action" href="/about">关于我 <ArrowUpRight size={17}/></Link></div>

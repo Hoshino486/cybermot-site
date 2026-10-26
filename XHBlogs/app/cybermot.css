@@ -134,3 +134,16 @@ html.dark{--day-glow-scale:.62}
 .motion-off .cyber-grid,.motion-off .hero-spotlight{opacity:.28}
 @media(prefers-reduced-motion:reduce){.hero-inner{transform:none;transition:none}}
 @media(max-width:650px){.cyber-grid{opacity:.34}.hero-spotlight{display:none}}
+/* ---- 标题的赛博朋克透视：3D 倾斜 + 品红/青色差 + 偶发故障抖动 ---- */
+.hero-copy h1{position:relative;display:inline-block;transform-style:preserve-3d;transform-origin:left center;transform:perspective(900px) rotateY(calc(-6deg + var(--mx,0) * -7deg)) rotateX(calc(3deg + var(--my,0) * 4deg));transition:transform .45s cubic-bezier(.22,.61,.36,1);text-shadow:-1px 0 rgba(255,62,165,.4),1px 0 rgba(75,230,255,.4),0 0 46px rgba(120,240,255,.2)}
+.hero-copy h1::before,.hero-copy h1::after{content:attr(data-text);position:absolute;left:0;top:0;pointer-events:none;mix-blend-mode:screen;font:inherit;letter-spacing:inherit;white-space:nowrap}
+.hero-copy h1::before{color:#ff3ea5;opacity:.3;clip-path:inset(0 0 52% 0);animation:title-glitch-a 7s steps(1,end) infinite}
+.hero-copy h1::after{color:#4be6ff;opacity:.3;clip-path:inset(48% 0 0 0);animation:title-glitch-b 6.3s steps(1,end) infinite}
+.hero-copy h1 i{display:inline-block;transform:translateZ(34px) rotate(12deg);text-shadow:0 0 18px rgba(120,240,255,.8)}
+.hero:hover .hero-copy h1{transform:perspective(900px) rotateY(calc(-2deg + var(--mx,0) * -11deg)) rotateX(calc(1deg + var(--my,0) * 6deg))}
+@keyframes title-glitch-a{0%,90%,100%{transform:translate3d(-3px,0,0)}91%{transform:translate3d(-9px,1px,0)}92%{transform:translate3d(5px,-2px,0)}93%{transform:translate3d(-4px,0,0)}94%{transform:translate3d(-3px,0,0)}}
+@keyframes title-glitch-b{0%,88%,100%{transform:translate3d(3px,0,0)}89%{transform:translate3d(8px,-1px,0)}90%{transform:translate3d(-6px,2px,0)}91%{transform:translate3d(3px,0,0)}92%{transform:translate3d(3px,0,0)}}
+.cyber-grid{opacity:.3}
+.dark .cyber-grid{opacity:.44}
+@media(prefers-reduced-motion:reduce){.hero-copy h1{transform:none;transition:none}.hero-copy h1::before,.hero-copy h1::after{animation:none}}
+@media(max-width:650px){.hero-copy h1{transform:none}}

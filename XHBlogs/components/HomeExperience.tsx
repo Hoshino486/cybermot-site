@@ -29,8 +29,8 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
   const visiblePosts = category === '全部' ? posts : posts.filter(post => post.tags.includes(category));
   // 标题故障：位置每次随机，节奏也随机，比固定 CSS 动画更像信号干扰
   useEffect(() => {
-    const title = document.getElementById('hero-title') as HTMLElement | null;
-    if (!title) return;
+    const targets = Array.from(document.querySelectorAll<HTMLElement>('[data-glitch]'));
+    if (!targets.length) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let timer = 0;
@@ -44,24 +44,28 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     const flick = () => {
       if (!alive) return;
       if (!document.documentElement.classList.contains('motion-off')) {
-        const first = randomBand();
-        const second = randomBand();
-        title.style.setProperty('--g-top', `${first.top.toFixed(1)}%`);
-        title.style.setProperty('--g-bottom', `${first.bottom.toFixed(1)}%`);
-        title.style.setProperty('--g2-top', `${second.top.toFixed(1)}%`);
-        title.style.setProperty('--g2-bottom', `${second.bottom.toFixed(1)}%`);
-        title.style.setProperty('--g-x', `${(Math.random() * 22 - 11).toFixed(1)}px`);
-        title.style.setProperty('--g2-x', `${(Math.random() * 22 - 11).toFixed(1)}px`);
-        title.classList.add('is-glitching');
+        for (const target of targets) {
+          const first = randomBand();
+          const second = randomBand();
+          target.style.setProperty('--g-top', `${first.top.toFixed(1)}%`);
+          target.style.setProperty('--g-bottom', `${first.bottom.toFixed(1)}%`);
+          target.style.setProperty('--g2-top', `${second.top.toFixed(1)}%`);
+          target.style.setProperty('--g2-bottom', `${second.bottom.toFixed(1)}%`);
+          target.style.setProperty('--g-x', `${(Math.random() * 22 - 11).toFixed(1)}px`);
+          target.style.setProperty('--g2-x', `${(Math.random() * 22 - 11).toFixed(1)}px`);
+          target.classList.add('is-glitching');
+        }
         window.setTimeout(() => {
           if (!alive) return;
-          title.classList.remove('is-glitching');
+          for (const target of targets) target.classList.remove('is-glitching');
           // 有时补一下短促的第二闪，像信号没接稳
           if (Math.random() > 0.55) {
             window.setTimeout(() => {
               if (!alive) return;
-              title.classList.add('is-glitching');
-              window.setTimeout(() => title.classList.remove('is-glitching'), 60);
+              for (const target of targets) target.classList.add('is-glitching');
+              window.setTimeout(() => {
+                for (const target of targets) target.classList.remove('is-glitching');
+              }, 60);
             }, 70);
           }
         }, 80 + Math.random() * 70);
@@ -73,7 +77,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     return () => {
       alive = false;
       window.clearTimeout(timer);
-      title.classList.remove('is-glitching');
+      for (const target of targets) target.classList.remove('is-glitching');
     };
   }, []);
   useEffect(() => {
@@ -115,8 +119,13 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
         <div className="hero-inner">
           <div className="hero-copy">
             <div className="hero-eyebrow"><span className="live-dot"/> HELLO, WORLD. <span className="eyebrow-line"/> 很高兴在这里遇见你</div>
-            <h1 id="hero-title" data-text="赛博刹那"><span className="cp-char">赛</span><span className="cp-char">博</span><span className="cp-char">刹</span><span className="cp-char">那</span><i>✦</i></h1>
-            <div className="hero-english">CYBERMOT<span>THE MOMENT IS INFINITE.</span></div>
+            <h1 id="hero-title" data-text="赛博刹那" data-glitch><span className="cp-char">赛</span><span className="cp-char">博</span><span className="cp-char">刹</span><span className="cp-char">那</span><i>✦</i></h1>
+            <div className="hero-english">
+              <span className="cp-word" data-text="CYBERMOT" data-glitch>
+                {'CYBERMOT'.split('').map((letter, index) => <span className="cp-char" key={index}>{letter}</span>)}
+              </span>
+              <span className="hero-english-note">THE MOMENT IS INFINITE.</span>
+            </div>
             <p className="hero-description">在数字世界，收藏每一个<br className="desktop-break"/>值得停留的<span>瞬间。</span></p>
             <div className="hero-actions"><button className="primary-action" onClick={() => visit('journal')}>开始探索 <ArrowDown size={17}/></button><Link className="secondary-action" href="/about">关于我 <ArrowUpRight size={17}/></Link></div>
             <div className="hero-signature"><span>创作</span><i/><span>记录</span><i/><span>一点点天马行空</span></div>

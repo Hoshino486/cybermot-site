@@ -21,7 +21,27 @@
       "database_name": "1",
       "database_id": "69932e58-21cf-457c-aa46-424057af3466"
     }
-  ]
+  ],
+  // 观测性：日志与追踪开、采样 100%，顶层开关按面板生成的配置保持关闭
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 1,
+    "redact_query_string": false,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true
+    },
+    "issue_detection": {
+      "enabled": false
+    }
+  }
   // The Worker name and the self-reference binding must both point at
   // cybermot-site: that is the account's only Worker and the one the
   // cybermot.bomber.asia custom domain is attached to.

@@ -1,8 +1,9 @@
 // Snapshot the Bilibili profile and every video of the space.
 //
 // The space APIs answer 412 unless the request carries a freshly seeded buvid3 cookie
-// and a WBI signature, so this script does both: it bootstraps cookies from the front
-// page, signs `x/space/wbi/arc/search`, then downloads each cover.
+// and a WBI signature, and they rate-limit intermittently on top of that. This script
+// seeds the cookies, signs the request, retries with backoff, and keeps the previous
+// snapshot whenever a page cannot be refreshed.
 //
 // Usage: npm run sync:bilibili
 // Set siteConfig.bilibiliVideos to a non-empty list to publish only those BV ids.
@@ -18,6 +19,7 @@ const IMAGE_DIR = path.join(ROOT, 'public', 'images', 'bilibili');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36';
 const MIXIN_TAB = [46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4, 22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52];
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const config = await readFile(path.join(ROOT, 'siteConfig.ts'), 'utf8');
 const uid = config.match(/bilibiliUid:\s*"(\d+)"/)?.[1];
@@ -36,12 +38,11 @@ for (const line of front.headers.getSetCookie?.() ?? []) {
   const [key, value] = pair.split('=');
   if (key) jar[key.trim()] = value?.trim() ?? '';
 }
-const cookie = Object.entries(jar).map(([key, value]) => `${key}=${value}`).join('; ');
 const HEADERS = {
   'User-Agent': UA,
   'Accept-Language': 'zh-CN,zh;q=0.9',
   Referer: `https://space.bilibili.com/${uid}`,
-  ...(cookie ? { Cookie: cookie } : {}),
+  ...(Object.keys(jar).length ? { Cookie: Object.entries(jar).map(([key, value]) => `${key}=${value}`).join('; ') } : {}),
 };
 console.log(`cookie: ${Object.keys(jar).join(', ') || '(无)'}`);
 
@@ -58,6 +59,11 @@ function sign(params) {
   return `${query}&w_rid=${createHash('md5').update(query + mixin).digest('hex')}`;
 }
 
+// ---- previous snapshot ------------------------------------------------------
+const previousVideos = await readFile(VIDEO_DATA, 'utf8').then((text) => JSON.parse(text)).catch(() => []);
+const previousById = new Map(previousVideos.map((video) => [video.bvid, video]));
+const previousProfile = await readFile(DATA, 'utf8').then((text) => JSON.parse(text)).catch(() => ({}));
+
 // ---- profile ----------------------------------------------------------------
 const profileResponse = await fetch(`https://api.bilibili.com/x/web-interface/card?mid=${uid}`, { headers: HEADERS, signal: AbortSignal.timeout(20_000) });
 if (!profileResponse.ok) throw new Error(`资料接口 ${profileResponse.status}`);
@@ -66,17 +72,19 @@ const card = profilePayload?.data?.card;
 if (profilePayload?.code !== 0 || !card) throw new Error(`资料异常：code=${profilePayload?.code}`);
 
 const face = (card.face || '').replace(/^http:/, 'https:');
-let avatarPath = '';
+let avatarPath = previousProfile.avatar ?? '';
 if (face) {
-  const image = await fetch(face, { headers: HEADERS, signal: AbortSignal.timeout(30_000) });
-  if (image.ok) {
-    const buffer = Buffer.from(await image.arrayBuffer());
-    if (buffer.length > 2_000) {
-      await mkdir(path.join(ROOT, 'public', 'images'), { recursive: true });
-      await writeFile(path.join(ROOT, 'public', 'images', 'bilibili-avatar.jpg'), buffer);
-      avatarPath = '/images/bilibili-avatar.jpg';
+  try {
+    const image = await fetch(face, { headers: HEADERS, signal: AbortSignal.timeout(30_000) });
+    if (image.ok) {
+      const buffer = Buffer.from(await image.arrayBuffer());
+      if (buffer.length > 2_000) {
+        await mkdir(path.join(ROOT, 'public', 'images'), { recursive: true });
+        await writeFile(path.join(ROOT, 'public', 'images', 'bilibili-avatar.jpg'), buffer);
+        avatarPath = '/images/bilibili-avatar.jpg';
+      }
     }
-  }
+  } catch {}
 }
 
 const snapshot = {
@@ -93,21 +101,36 @@ const snapshot = {
 await writeFile(DATA, JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
 console.log(`资料：${snapshot.name} · ${snapshot.fans} 粉丝 · ${snapshot.videos} 视频 · ${snapshot.likes} 获赞`);
 
-// ---- video list -------------------------------------------------------------
-const list = [];
-for (let page = 1; page <= 5; page++) {
-  const query = sign({ mid: uid, ps: 30, pn: page, order: 'pubdate', platform: 'web', web_location: 1550101 });
-  const response = await fetch(`https://api.bilibili.com/x/space/wbi/arc/search?${query}`, { headers: HEADERS, signal: AbortSignal.timeout(25_000) });
-  const payload = await response.json().catch(() => ({}));
-  const items = payload?.data?.list?.vlist ?? [];
-  if (payload?.code !== 0) {
-    console.log(`分页 ${page} 失败：code=${payload?.code} ${payload?.message ?? ''}`);
-    break;
+// ---- video list (retried: 412 comes and goes) --------------------------------
+let list = [];
+for (let attempt = 0; attempt < 4 && list.length === 0; attempt++) {
+  if (attempt) {
+    console.log(`  第 ${attempt + 1} 次重试…`);
+    await sleep(6_000 * attempt);
   }
-  list.push(...items);
-  if (items.length < 30) break;
+  let failed = false;
+  for (let page = 1; page <= 5; page++) {
+    const query = sign({ mid: uid, ps: 30, pn: page, order: 'pubdate', platform: 'web', web_location: 1550101 });
+    const response = await fetch(`https://api.bilibili.com/x/space/wbi/arc/search?${query}`, { headers: HEADERS, signal: AbortSignal.timeout(25_000) });
+    const payload = await response.json().catch(() => ({}));
+    if (payload?.code !== 0) {
+      console.log(`  第 ${page} 页失败：code=${payload?.code ?? 'html'} ${payload?.message ?? ''}`);
+      failed = true;
+      break;
+    }
+    const items = payload?.data?.list?.vlist ?? [];
+    list.push(...items);
+    if (items.length < 30) break;
+    await sleep(1_200);
+  }
+  if (failed) list = [];
 }
 console.log(`接口返回 ${list.length} 个投稿`);
+
+if (list.length === 0) {
+  console.log('未取到投稿列表，保留 data/bilibili-videos.json 不变');
+  process.exit(0);
+}
 
 const picked = pinned.length ? list.filter((item) => pinned.includes(item.bvid)) : list;
 
@@ -122,9 +145,11 @@ const videos = [];
 
 for (const item of picked) {
   const bvid = item.bvid;
-  let cover = '';
+  const old = previousById.get(bvid);
+  let cover = old?.cover ?? '';
   const pic = (item.pic || '').replace(/^http:/, 'https:').replace(/^\/\//, 'https://');
-  if (pic) {
+
+  if (pic && !cover.startsWith('/images/bilibili/')) {
     try {
       const image = await fetch(`${pic.split('@')[0]}@480w_270h_1c`, { headers: HEADERS, signal: AbortSignal.timeout(30_000) });
       if (image.ok) {

@@ -41,6 +41,9 @@ export const siteConfig = {
   photoWallImage: "/images/dream.webp",
   musicPlaylistId: "18527954469",
   musicPlaylistTitle: "刹那的音乐宇宙",
+  localMusic: {
+    "2068215868": "/music/2068215868.mp3"
+  },
   cloudMusicIds: [],
   social: {
     github: "",

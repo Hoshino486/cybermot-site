@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
 import Navbar from './Navbar';
+import CyberGrid from './CyberGrid';
 import BilibiliSection from './BilibiliSection';
 import SteamSection from './SteamSection';
 import { useSitePreferences } from './SitePreferencesProvider';
@@ -58,6 +59,9 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     <main>
       <section className="hero-scene" id="home" aria-labelledby="hero-title">
         <div className="scene-coordinate"><span>CM / PERSONAL UNIVERSE</span><span>EST. 2026 — ∞</span></div>
+
+        <CyberGrid />
+        <div className="hero-spotlight" aria-hidden="true" />
 
         <div className="hero-inner">
           <div className="hero-copy">

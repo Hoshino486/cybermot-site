@@ -232,7 +232,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
 
       <section className="journal-section cm-section" id="journal" aria-labelledby="journal-title">
         <div className="section-topline"><span>CHAPTER 02 / JOURNAL</span><span>WORDS ARE LITTLE WORLDS.</span></div>
-        <div className="section-heading"><div><span className="section-kicker">留下一点，存在过的痕迹。</span><h2 id="journal-title">文字与<span>灵感</span><sup>({String(posts.length).padStart(2, '0')})</sup></h2></div><Link className="text-link" href="/blog">进入博客 <ArrowUpRight size={17}/></Link></div>
+        <div className="section-heading"><div><span className="section-kicker">留下一点，存在过的痕迹。</span><h2 id="journal-title">文章与<span>项目</span><sup>({String(posts.length).padStart(2, '0')})</sup></h2></div><Link className="text-link" href="/blog">进入博客 <ArrowUpRight size={17}/></Link></div>
         <div className="journal-toolbar"><div className="category-tabs" aria-label="按标签筛选文章">{tags.map(tag => <button key={tag} aria-pressed={category === tag} className={category === tag ? 'selected' : ''} onClick={() => setCategory(tag)}>{tag}</button>)}</div><Link href="/timeline" className="archive-link">按时间归档 <Layers3 size={15}/></Link></div>
         <div className={'journal-grid' + (visiblePosts.length >= 4 ? ' is-marquee' : '')} ref={railRef} tabIndex={visiblePosts.length >= 4 ? 0 : undefined} aria-label={visiblePosts.length >= 4 ? '最新文章，可拖动或滑动浏览' : undefined}>
           <div className="journal-track">

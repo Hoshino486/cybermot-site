@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
 import Navbar from './Navbar';
 import CyberGrid from './CyberGrid';
@@ -22,6 +22,7 @@ const formatDate = (date: string) => date ? date.slice(0, 10).replaceAll('-', '.
 
 export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
   const root = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState('home');
   const { scene, setScene, motion, setMotion } = useSitePreferences();
   const [category, setCategory] = useState('全部');
@@ -87,6 +88,84 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     chapters.forEach(chapter => { const node = document.getElementById(chapter.id); if (node) observer.observe(node); });
     return () => observer.disconnect();
   }, []);
+  // 文章轨道：自动推进、鼠标拖拽、触摸滑动，到一半宽度就无缝回接
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail || visiblePosts.length < 4) return;
+    rail.scrollLeft = 0;
+
+    const loopWidth = () => rail.scrollWidth / 2;
+    const wrap = () => {
+      const half = loopWidth();
+      if (half <= 0) return;
+      if (rail.scrollLeft >= half) rail.scrollLeft -= half;
+      else if (rail.scrollLeft < 0) rail.scrollLeft += half;
+    };
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let frame = 0;
+    let hovered = false;
+    let dragging = false;
+    let moved = 0;
+    let startX = 0;
+    let startScroll = 0;
+
+    const step = () => {
+      if (!reduce && !hovered && !dragging) {
+        rail.scrollLeft += 0.65;
+        wrap();
+      }
+      frame = requestAnimationFrame(step);
+    };
+
+    const onPointerEnter = (event: PointerEvent) => { if (event.pointerType === 'mouse') hovered = true; };
+    const onPointerLeave = () => { hovered = false; };
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      dragging = true; moved = 0;
+      startX = event.clientX;
+      startScroll = rail.scrollLeft;
+      rail.classList.add('is-dragging');
+      try { rail.setPointerCapture(event.pointerId); } catch {}
+    };
+    const onPointerMove = (event: PointerEvent) => {
+      if (!dragging) return;
+      const delta = event.clientX - startX;
+      moved = Math.max(moved, Math.abs(delta));
+      rail.scrollLeft = startScroll - delta;
+      wrap();
+    };
+    const onPointerUp = (event: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      rail.classList.remove('is-dragging');
+      try { rail.releasePointerCapture(event.pointerId); } catch {}
+    };
+    // 拖完松手不要顺手点进文章
+    const onClickCapture = (event: MouseEvent) => {
+      if (moved > 6) { event.preventDefault(); event.stopPropagation(); moved = 0; }
+    };
+
+    rail.addEventListener('pointerenter', onPointerEnter);
+    rail.addEventListener('pointerleave', onPointerLeave);
+    rail.addEventListener('pointerdown', onPointerDown);
+    rail.addEventListener('pointermove', onPointerMove);
+    rail.addEventListener('pointerup', onPointerUp);
+    rail.addEventListener('pointercancel', onPointerUp);
+    rail.addEventListener('click', onClickCapture, true);
+    frame = requestAnimationFrame(step);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      rail.removeEventListener('pointerenter', onPointerEnter);
+      rail.removeEventListener('pointerleave', onPointerLeave);
+      rail.removeEventListener('pointerdown', onPointerDown);
+      rail.removeEventListener('pointermove', onPointerMove);
+      rail.removeEventListener('pointerup', onPointerUp);
+      rail.removeEventListener('pointercancel', onPointerUp);
+      rail.removeEventListener('click', onClickCapture, true);
+    };
+  }, [visiblePosts.length, category]);
   useEffect(() => {
     const node = root.current;
     if (!node) return;
@@ -155,8 +234,8 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
         <div className="section-topline"><span>CHAPTER 02 / JOURNAL</span><span>WORDS ARE LITTLE WORLDS.</span></div>
         <div className="section-heading"><div><span className="section-kicker">留下一点，存在过的痕迹。</span><h2 id="journal-title">文字与<span>灵感</span><sup>({String(posts.length).padStart(2, '0')})</sup></h2></div><Link className="text-link" href="/blog">进入博客 <ArrowUpRight size={17}/></Link></div>
         <div className="journal-toolbar"><div className="category-tabs" aria-label="按标签筛选文章">{tags.map(tag => <button key={tag} aria-pressed={category === tag} className={category === tag ? 'selected' : ''} onClick={() => setCategory(tag)}>{tag}</button>)}</div><Link href="/timeline" className="archive-link">按时间归档 <Layers3 size={15}/></Link></div>
-        <div className={'journal-grid' + (visiblePosts.length >= 4 ? ' is-marquee' : '')}>
-          <div className="journal-track" style={{ '--scroll-dur': `${Math.max(24, visiblePosts.length * 7)}s` } as CSSProperties}>
+        <div className={'journal-grid' + (visiblePosts.length >= 4 ? ' is-marquee' : '')} ref={railRef} tabIndex={visiblePosts.length >= 4 ? 0 : undefined} aria-label={visiblePosts.length >= 4 ? '最新文章，可拖动或滑动浏览' : undefined}>
+          <div className="journal-track">
             {(() => {
               const looped = visiblePosts.length >= 4 ? [...visiblePosts, ...visiblePosts] : visiblePosts;
               return looped.map((post, index) => <article className="journal-card" key={post.slug + '-' + index} aria-hidden={index >= visiblePosts.length ? true : undefined} tabIndex={index >= visiblePosts.length ? -1 : undefined}>

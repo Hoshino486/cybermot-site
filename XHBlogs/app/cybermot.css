@@ -192,13 +192,22 @@ html.dark{--day-glow-scale:.62}
 
 /* ---- 文章数 >= 4 时的横向循环滚动 ---- */
 .journal-track{display:contents}
-.journal-grid.is-marquee{display:block;overflow:hidden;min-height:370px;
+.journal-grid.is-marquee{display:block;min-height:370px;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-y;cursor:grab;
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 2.5%,#000 97.5%,transparent 100%);
   mask-image:linear-gradient(90deg,transparent 0,#000 2.5%,#000 97.5%,transparent 100%)}
-.journal-grid.is-marquee .journal-track{display:flex;width:max-content;animation:journal-scroll var(--scroll-dur,32s) linear infinite;will-change:transform}
-.journal-grid.is-marquee:hover .journal-track,.journal-grid.is-marquee:focus-within .journal-track{animation-play-state:paused}
+.journal-grid.is-marquee::-webkit-scrollbar{display:none}
+.journal-grid.is-marquee:focus-visible{outline:2px solid rgba(95,240,255,.45);outline-offset:6px}
+.journal-grid.is-marquee.is-dragging{cursor:grabbing}
+.journal-grid.is-marquee.is-dragging .journal-card{pointer-events:none;user-select:none}
+.journal-grid.is-marquee .journal-track{display:flex;width:max-content}
 .journal-grid.is-marquee .journal-card{flex:0 0 384px;margin-right:25px}
-@keyframes journal-scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+.journal-grid.is-marquee img{-webkit-user-drag:none;user-select:none}
 @media(max-width:1100px){.journal-grid.is-marquee .journal-card{flex:0 0 340px}}
-@media(max-width:700px){.journal-grid.is-marquee .journal-card{flex:0 0 min(300px,76vw);margin-right:16px}}
-@media(prefers-reduced-motion:reduce){.journal-grid.is-marquee{overflow-x:auto}.journal-grid.is-marquee .journal-track{animation:none}}
+@media(max-width:700px){
+  .journal-grid.is-marquee .journal-card{flex:0 0 min(292px,78vw);margin-right:14px}
+  .journal-grid.is-marquee{
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+    mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%)}
+}
+@media(prefers-reduced-motion:reduce){.journal-grid.is-marquee{cursor:auto}}

@@ -103,6 +103,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     };
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SPEED = 18; // 每秒推进的像素，想快就调大
     let frame = 0;
     let hovered = false;
     let pressed = false;
@@ -110,10 +111,13 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     let moved = 0;
     let startX = 0;
     let startScroll = 0;
+    let last = 0;
 
-    const step = () => {
+    const step = (now: number) => {
+      const delta = last ? Math.min(now - last, 64) : 16;
+      last = now;
       if (!reduce && !hovered && !pressed && !dragging) {
-        rail.scrollLeft += 0.65;
+        rail.scrollLeft += (SPEED * delta) / 1000;
         wrap();
       }
       frame = requestAnimationFrame(step);

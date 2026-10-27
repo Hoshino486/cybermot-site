@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Camera, ChevronRight, Code2, Compass, ExternalLink, Feather, Headphones, Layers3, MoveUpRight, Orbit, Pause, Play, Radio, Rss, Sparkles } from 'lucide-react';
 import Navbar from './Navbar';
 import CyberGrid from './CyberGrid';
@@ -25,7 +25,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
   const [active, setActive] = useState('home');
   const { scene, setScene, motion, setMotion } = useSitePreferences();
   const [category, setCategory] = useState('全部');
-  const tags = ['全部', ...Array.from(new Set(posts.flatMap(post => post.tags.filter(tag => tag !== '示例')))).slice(0, 4)];
+  const tags = ['全部', ...Array.from(new Set(posts.flatMap(post => post.tags.filter(tag => tag !== '示例'))))];
   const visiblePosts = category === '全部' ? posts : posts.filter(post => post.tags.includes(category));
   // 标题故障：位置每次随机，节奏也随机，比固定 CSS 动画更像信号干扰
   useEffect(() => {
@@ -155,11 +155,16 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
         <div className="section-topline"><span>CHAPTER 02 / JOURNAL</span><span>WORDS ARE LITTLE WORLDS.</span></div>
         <div className="section-heading"><div><span className="section-kicker">留下一点，存在过的痕迹。</span><h2 id="journal-title">文字与<span>灵感</span><sup>({String(posts.length).padStart(2, '0')})</sup></h2></div><Link className="text-link" href="/blog">进入博客 <ArrowUpRight size={17}/></Link></div>
         <div className="journal-toolbar"><div className="category-tabs" aria-label="按标签筛选文章">{tags.map(tag => <button key={tag} aria-pressed={category === tag} className={category === tag ? 'selected' : ''} onClick={() => setCategory(tag)}>{tag}</button>)}</div><Link href="/timeline" className="archive-link">按时间归档 <Layers3 size={15}/></Link></div>
-        <div className="journal-grid">
-          {visiblePosts.slice(0, 3).map((post, index) => <article className="journal-card" key={post.slug}>
-            <Link className="post-cover" href={'/posts/' + post.slug}><img src={post.cover} alt="" loading="lazy"/><span className="post-number">0{index + 1}</span><span className="post-open"><ArrowUpRight size={20}/></span><span className="post-image-label">{index === 0 ? 'A NEW BEGINNING' : index === 1 ? 'SOMEWHERE TO STAY' : 'SMALL, BEAUTIFUL THINGS'}</span></Link>
-            <div className="post-content"><div className="post-meta"><span>{post.tags[0] || '随笔'}</span><time dateTime={post.date}>{formatDate(post.date)}</time>{post.sample && <em>示例文章</em>}</div><h3><Link href={'/posts/' + post.slug}>{post.title}</Link></h3><p>{post.description}</p><div className="post-bottom"><span>{post.readingMinutes} 分钟阅读</span><Link href={'/posts/' + post.slug} aria-label={'阅读' + post.title}>阅读全文 <ArrowRight size={14}/></Link></div></div>
-          </article>)}
+        <div className={'journal-grid' + (visiblePosts.length >= 4 ? ' is-marquee' : '')}>
+          <div className="journal-track" style={{ '--scroll-dur': `${Math.max(24, visiblePosts.length * 7)}s` } as CSSProperties}>
+            {(() => {
+              const looped = visiblePosts.length >= 4 ? [...visiblePosts, ...visiblePosts] : visiblePosts;
+              return looped.map((post, index) => <article className="journal-card" key={post.slug + '-' + index} aria-hidden={index >= visiblePosts.length ? true : undefined} tabIndex={index >= visiblePosts.length ? -1 : undefined}>
+                <Link className="post-cover" href={'/posts/' + post.slug}><img src={post.cover} alt="" loading="lazy"/><span className="post-number">0{(index % visiblePosts.length) + 1}</span><span className="post-open"><ArrowUpRight size={20}/></span><span className="post-image-label">{index % visiblePosts.length === 0 ? 'A NEW BEGINNING' : index % visiblePosts.length === 1 ? 'SOMEWHERE TO STAY' : 'SMALL, BEAUTIFUL THINGS'}</span></Link>
+                <div className="post-content"><div className="post-meta"><span>{post.tags[0] || '随笔'}</span><time dateTime={post.date}>{formatDate(post.date)}</time>{post.sample && <em>示例文章</em>}</div><h3><Link href={'/posts/' + post.slug}>{post.title}</Link></h3><p>{post.description}</p><div className="post-bottom"><span>{post.readingMinutes} 分钟阅读</span><Link href={'/posts/' + post.slug} aria-label={'阅读' + post.title}>阅读全文 <ArrowRight size={14}/></Link></div></div>
+              </article>);
+            })()}
+          </div>
           {visiblePosts.length === 0 && <p className="empty-message">这个分类还没有文章，新的故事正在路上。</p>}
         </div>
         <div className="journal-footnote"><span className="tiny-cross">+</span><span>每一个微小的想法，都值得被认真保存。</span><span className="tiny-cross">+</span></div>

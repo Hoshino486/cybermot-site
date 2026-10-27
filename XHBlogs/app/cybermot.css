@@ -185,3 +185,20 @@ html.dark{--day-glow-scale:.62}
 .hero-english .cp-char:nth-of-type(7){animation-delay:.79s}
 .hero-english .cp-char:nth-of-type(8){animation-delay:.835s}
 @media(prefers-reduced-motion:reduce){.hero-english .cp-char{animation:none}}
+/* ---- 分类标签：显示全部，放不下就横向滚动 ---- */
+.category-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;max-width:100%;padding-bottom:2px}
+.category-tabs::-webkit-scrollbar{display:none}
+.category-tabs button{flex:0 0 auto}
+
+/* ---- 文章数 >= 4 时的横向循环滚动 ---- */
+.journal-track{display:contents}
+.journal-grid.is-marquee{display:block;overflow:hidden;min-height:370px;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 2.5%,#000 97.5%,transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 2.5%,#000 97.5%,transparent 100%)}
+.journal-grid.is-marquee .journal-track{display:flex;width:max-content;animation:journal-scroll var(--scroll-dur,32s) linear infinite;will-change:transform}
+.journal-grid.is-marquee:hover .journal-track,.journal-grid.is-marquee:focus-within .journal-track{animation-play-state:paused}
+.journal-grid.is-marquee .journal-card{flex:0 0 384px;margin-right:25px}
+@keyframes journal-scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+@media(max-width:1100px){.journal-grid.is-marquee .journal-card{flex:0 0 340px}}
+@media(max-width:700px){.journal-grid.is-marquee .journal-card{flex:0 0 min(300px,76vw);margin-right:16px}}
+@media(prefers-reduced-motion:reduce){.journal-grid.is-marquee{overflow-x:auto}.journal-grid.is-marquee .journal-track{animation:none}}

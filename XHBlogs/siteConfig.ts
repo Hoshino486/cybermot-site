@@ -15,8 +15,8 @@ export const siteConfig = {
   // 默认固定动漫插画与独立特效；配置真正动画视频后可开启视频选项。
   enableBackgroundVideo: false,
   backgroundVideoUrl: "",
-  videoPosterUrl: "/images/dream.webp",
-  alternateBackgroundImage: "/images/evening.webp",
+  videoPosterUrl: "/images/setsuna.webp",
+  alternateBackgroundImage: "/images/setsuna.webp",
   useGradient: false,
   themeColors: [
     "#9ab6d0",

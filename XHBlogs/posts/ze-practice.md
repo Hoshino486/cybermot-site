@@ -112,3 +112,5 @@ SteamID64 用 `!ze_whoami` 查。
 代码是 CounterStrikeSharp 插件，`src/` 下按功能拆成了服务层和逻辑层，`tools/` 是启动、预检、更新和回滚脚本，`docs/` 里是按版本归档的改动记录。
 
 仓库**不含**游戏资源、地图 VPK 或工坊模型 —— 那些单独发在 Steam 创意工坊。地图数据来自 `Hoshino486/cs2` 的公开配置，版权仍归原作者。
+
+> 服务器还没跑起来？看下一篇：**[从零搭一个本地 CS2 跑图服](/posts/local-ze-server)**。

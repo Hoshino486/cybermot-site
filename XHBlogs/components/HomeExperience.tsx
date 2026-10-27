@@ -126,7 +126,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
               </span>
               <span className="hero-english-note">THE MOMENT IS INFINITE.</span>
             </div>
-            <p className="hero-description">在数字世界，收藏每一个<br className="desktop-break"/>值得停留的<span>瞬间。</span></p>
+            <p className="hero-description">一位酷爱逆向解包游戏资源的动画人，<br className="desktop-break"/>也是<span>CS2zeMapper</span>，擅长制作皮肤模型等，爱好二次元。</p>
             <div className="hero-actions"><button className="primary-action" onClick={() => visit('journal')}>开始探索 <ArrowDown size={17}/></button><Link className="secondary-action" href="/about">关于我 <ArrowUpRight size={17}/></Link></div>
             <div className="hero-signature"><span>创作</span><i/><span>记录</span><i/><span>一点点天马行空</span></div>
           </div>

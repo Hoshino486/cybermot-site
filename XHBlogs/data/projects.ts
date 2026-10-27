@@ -27,6 +27,14 @@ export const projectsData: Project[] = [
     tags: ["Blender", "Python", "FBX"],
   },
   {
+    id: "ZePractice",
+    name: "ZePractice",
+    description: "给自己那张 CS2 跑图服写的 CounterStrikeSharp 插件：练习模式、人类指挥与标点画线、换图投票、工坊自动更新、Bot 陪练、神器监听和运行时诊断 HUD。",
+    icon: "🎮",
+    githubUrl: "https://github.com/Hoshino486/ZePractice",
+    tags: ["CS2", "C#", "CounterStrikeSharp"],
+  },
+  {
     id: "Unpackaging-tools",
     name: "Unpackaging Tools",
     description: "解包流程所需重要文件的备份仓，避免误删后整条解包链路失效。",

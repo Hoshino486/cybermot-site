@@ -3,7 +3,7 @@ title: "关于赛博刹那"
 date: "2026-10-27"
 tags: []
 mood: ""
-cover: "/images/evening.webp"
+cover: "/images/about-banner.webp"
 description: "一个喜欢把游戏拆开看看里面有什么的动画人，做 CS2 ZE 地图、模型皮肤，也写解包工具。"
 ---
 

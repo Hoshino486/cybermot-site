@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
-export default function TimelineNode({ post, index }: { post: any, index: number }) {
+export default function TimelineNode({ post, index, aside }: { post: any, index: number, aside?: ReactNode }) {
   // 判断是放在左边还是右边（偶数左，奇数右）
   const isLeft = index % 2 === 0;
 
@@ -16,7 +17,8 @@ export default function TimelineNode({ post, index }: { post: any, index: number
       className={`mb-12 flex justify-between items-center w-full ${isLeft ? 'md:flex-row-reverse' : 'flex-row'}`}
     >
       {/* 留出对面的一半空白 */}
-      <div className="order-1 w-5/12 hidden md:block"></div>
+      {/* 对面的一半：有内容时放摘要，否则留白 */}
+      <div className="order-1 w-5/12 hidden md:flex items-center justify-center px-6">{aside}</div>
 
       {/* 中间的圆形节点 */}
       <div className="z-20 flex items-center justify-center order-1 bg-white dark:bg-slate-900 shadow-xl w-6 h-6 rounded-full border-4 border-indigo-400 ring-4 ring-indigo-200/50 dark:ring-indigo-900/30 transition-colors duration-1000"></div>

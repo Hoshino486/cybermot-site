@@ -16,6 +16,48 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
   const [viewMode, setViewMode] = useState<'timeline' | 'card'>('timeline');
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  // 归档摘要：放在时间线首条对面，避免左侧大片空白
+  const archive = useMemo(() => {
+    const times = initialPosts
+      .map(p => new Date(String(p.date).replace(' ', 'T')))
+      .filter(d => !Number.isNaN(d.getTime()))
+      .sort((a, b) => a.getTime() - b.getTime());
+    const month = (d: Date) => d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0');
+    return {
+      total: initialPosts.length,
+      tags: tags.length,
+      months: new Set(initialPosts.map(p => String(p.date).slice(0, 7))).size,
+      span: times.length ? month(times[0]) + ' — ' + month(times[times.length - 1]) : '—',
+      latest: times.length ? month(times[times.length - 1]) : '—',
+    };
+  }, [initialPosts, tags]);
+
+  const archiveCard = (
+    <div className="w-full max-w-sm rounded-3xl border border-white/40 dark:border-white/10 bg-white/40 dark:bg-slate-900/50 backdrop-blur-md p-6 text-left shadow-lg">
+      <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-indigo-500 dark:text-indigo-400">Archive Overview</p>
+      <p className="mt-3 text-4xl font-black text-slate-800 dark:text-slate-100">
+        {archive.total}<span className="ml-2 text-sm font-bold text-slate-500 dark:text-slate-400">篇文章</span>
+      </p>
+      <div className="mt-5 grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <p className="text-slate-400 dark:text-slate-500">归档跨度</p>
+          <p className="mt-1 font-bold text-slate-700 dark:text-slate-200">{archive.span}</p>
+        </div>
+        <div>
+          <p className="text-slate-400 dark:text-slate-500">分类</p>
+          <p className="mt-1 font-bold text-slate-700 dark:text-slate-200">{archive.tags} 个</p>
+        </div>
+        <div>
+          <p className="text-slate-400 dark:text-slate-500">活跃月份</p>
+          <p className="mt-1 font-bold text-slate-700 dark:text-slate-200">{archive.months} 个</p>
+        </div>
+        <div>
+          <p className="text-slate-400 dark:text-slate-500">最近更新</p>
+          <p className="mt-1 font-bold text-slate-700 dark:text-slate-200">{archive.latest}</p>
+        </div>
+      </div>
+    </div>
+  );
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const gridScrollRef = useRef<HTMLDivElement>(null);
 
@@ -266,6 +308,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
                   <TimelineNode
                     key={post.slug}
                     post={post}
+                    aside={index === 0 ? archiveCard : undefined}
                     index={index + 1}
                   />
                 ))}

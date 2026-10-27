@@ -98,7 +98,7 @@ export const siteConfig = {
     maxOutputTokens: 150,
     temperature: 0.85
   },
-  friendLinkApplyFormat: "名称：赛博刹那 / CyberMot\n简介：在数字世界，收藏每一个值得停留的瞬间。\n链接：https://bomber.asia\n头像：https://bomber.asia/images/avatar.jpg",
+  friendLinkApplyFormat: "名称：赛博刹那 / CyberMot\n简介：一位酷爱逆向解包游戏资源的动画人，也是 CS2zeMapper，擅长制作皮肤模型，爱好二次元。\n链接：https://bomber.asia\n头像：https://bomber.asia/images/avatar.jpg",
   enableLevelSystem: false
 };
 

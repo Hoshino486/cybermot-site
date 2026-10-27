@@ -173,9 +173,12 @@ export default function AboutClient({
                 <style>{`
                   .prose h1 { font-size: 1.8rem !important; font-weight: 900 !important; margin-bottom: 1.2rem !important; margin-top: 2rem !important; line-height: 1.3 !important; color: inherit !important; }
                   .prose h2 { font-size: 1.5rem !important; font-weight: 800 !important; margin-bottom: 1rem !important; margin-top: 1.5rem !important; color: inherit !important; }
-                  .prose h3 { font-size: 1.2rem !important; font-weight: 700 !important; margin-bottom: 0.8rem !important; color: inherit !important; }
+                  .prose h3 { font-size: 1.2rem !important; font-weight: 700 !important; margin-bottom: 0.8rem !important; margin-top: 2rem !important; padding-top: 0.4rem !important; color: inherit !important; }
                   .prose p { font-size: 0.95rem !important; line-height: 1.75 !important; color: inherit !important; }
                   .prose ul, .prose ol { padding-left: 1.2rem !important; font-size: 0.95rem !important; }
+                  .prose ul li { margin: 0.55rem 0 !important; line-height: 1.75 !important; }
+                  .prose a { text-decoration-thickness: 1px !important; text-underline-offset: 3px !important; }
+                  .prose strong { font-weight: 700 !important; }
 
                   .prose pre {
                     background-color: #282c34 !important; color: #abb2bf !important;

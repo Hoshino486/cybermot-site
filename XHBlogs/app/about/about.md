@@ -11,7 +11,7 @@ description: "一个喜欢把游戏拆开看看里面有什么的动画人，做
 
 也可以叫我 **CyberMot**，或者直接叫刹那。
 
-一个喜欢把游戏拆开、看看里面到底装了什么的人。本职是动画，日常在做 **CS2 ZE 地图**，也算是半个 **CS2zeMapper**；喜欢做模型和皮肤，顺手写点工具来解决自己遇到的问题。
+一个喜欢把游戏拆开、看看里面到底装了什么的人。本职是动画，日常在做 **CS2 ZE 地图**，也算是 **CS2zeMapper**；喜欢做模型和皮肤，顺手写点工具来解决自己遇到的问题。
 
 二次元爱好者，这点大概从背景和头像就看得出来。
 
@@ -23,7 +23,9 @@ description: "一个喜欢把游戏拆开看看里面有什么的动画人，做
 
 它是我目前花时间最多的项目 —— 一开始只是想导几个模型，后来为了支持更多游戏，解析层越写越深。
 
-配套还有一个 **Blender 插件**，负责把导出来的 FBX 接进 Blender：ASCII FBX 自动转换、材质与贴图还原、图集、顶点组整理、角色工具、物理缓存。
+### 接进 Blender · BomberStudio_Blender
+
+配套的 Blender 插件，负责把导出来的 FBX 接进 Blender：ASCII FBX 自动转换、材质与贴图还原、图集、顶点组整理、角色工具、物理缓存。
 
 ### 跑起来 · ZePractice
 
@@ -33,16 +35,14 @@ description: "一个喜欢把游戏拆开看看里面有什么的动画人，做
 
 ### 画出来 · 地图与模型
 
-CS2 ZE 地图的制作、皮肤的移植与调整、模型整理。地图我会尽量发布到 Steam 创意工坊，做成服务器能直接下载的完整包。
+CS2 ZE 地图的制作、皮肤的移植与调整、模型整理。地图我会发布到 Steam 创意工坊，做成服务器能直接下载的完整包。
 
 ## 项目
 
-| 项目 | 是什么 |
-|---|---|
-| [BomberStudio](https://github.com/Hoshino486/BomberStudio) | Unity 资源浏览、预览与导出工具 |
-| [BomberStudio_Blender](https://github.com/Hoshino486/BomberStudio_Blender) | 把导出的模型接进 Blender 的插件 |
-| [ZePractice](https://github.com/Hoshino486/ZePractice) | CS2 跑图服插件（练习、指挥、投票、诊断） |
-| [cybermot-site](https://github.com/Hoshino486/cybermot-site) | 本站的源码 |
+- **[BomberStudio](https://github.com/Hoshino486/BomberStudio)** —— Unity 资源浏览、预览与导出工具
+- **[BomberStudio_Blender](https://github.com/Hoshino486/BomberStudio_Blender)** —— 把导出的模型接进 Blender 的插件
+- **[ZePractice](https://github.com/Hoshino486/ZePractice)** —— CS2 跑图服插件（练习、指挥、投票、诊断）
+- **[cybermot-site](https://github.com/Hoshino486/cybermot-site)** —— 本站的源码
 
 ## 关于这里
 
@@ -56,14 +56,16 @@ CS2 ZE 地图的制作、皮肤的移植与调整、模型整理。地图我会�
 
 有软件使用、报错、功能建议之类的问题，直接发消息就行；带上截图、文件类型和日志，能省掉很多来回。
 
-### 群
+### 刹那 cs2 日常
 
-**刹那 cs2 日常** —— CS2 地图、跑图服、模型相关的交流
+CS2 地图、跑图服、模型相关的交流。
 
 - 群号：`892341898`
 - [点击链接加入群聊【刹那cs2日常】](https://qm.qq.com/q/bKn9tCMHtK)
 
-**BomberStudio 交流群** —— 解包工具的提问、反馈与新版本通知
+### BomberStudio 交流群
+
+解包工具的提问、反馈与新版本通知。
 
 - 群号：`517046892`
 - [点击链接加入群聊【BomberStudio交流群】](https://qm.qq.com/q/ADr4L5fntC)

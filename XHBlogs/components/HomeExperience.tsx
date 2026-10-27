@@ -105,13 +105,14 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let frame = 0;
     let hovered = false;
+    let pressed = false;
     let dragging = false;
     let moved = 0;
     let startX = 0;
     let startScroll = 0;
 
     const step = () => {
-      if (!reduce && !hovered && !dragging) {
+      if (!reduce && !hovered && !pressed && !dragging) {
         rail.scrollLeft += 0.65;
         wrap();
       }
@@ -120,30 +121,41 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
 
     const onPointerEnter = (event: PointerEvent) => { if (event.pointerType === 'mouse') hovered = true; };
     const onPointerLeave = () => { hovered = false; };
+    // 按下时先不抢指针：抢早了 click 会落在轨道上，链接收不到
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
-      dragging = true; moved = 0;
+      pressed = true;
+      dragging = false;
+      moved = 0;
       startX = event.clientX;
       startScroll = rail.scrollLeft;
-      rail.classList.add('is-dragging');
-      try { rail.setPointerCapture(event.pointerId); } catch {}
     };
     const onPointerMove = (event: PointerEvent) => {
-      if (!dragging) return;
+      if (!pressed) return;
       const delta = event.clientX - startX;
+      if (!dragging) {
+        if (Math.abs(delta) < 6) return;
+        dragging = true;
+        rail.classList.add('is-dragging');
+        try { rail.setPointerCapture(event.pointerId); } catch {}
+      }
       moved = Math.max(moved, Math.abs(delta));
       rail.scrollLeft = startScroll - delta;
       wrap();
     };
     const onPointerUp = (event: PointerEvent) => {
+      pressed = false;
       if (!dragging) return;
       dragging = false;
       rail.classList.remove('is-dragging');
       try { rail.releasePointerCapture(event.pointerId); } catch {}
     };
-    // 拖完松手不要顺手点进文章
+    // 拖完松手不要顺手点进文章；普通点击放行
     const onClickCapture = (event: MouseEvent) => {
-      if (moved > 6) { event.preventDefault(); event.stopPropagation(); moved = 0; }
+      if (moved > 6) { event.preventDefault(); event.stopPropagation(); }
+      moved = 0;
+      dragging = false;
+      rail.classList.remove('is-dragging');
     };
 
     rail.addEventListener('pointerenter', onPointerEnter);

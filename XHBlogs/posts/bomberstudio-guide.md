@@ -2,7 +2,7 @@
 title: "BomberStudio 使用指南：从加载到导出"
 date: "2026-10-27T12:00:00+08:00"
 description: "Unity 资源浏览与导出工具的完整上手流程：选游戏配置、加载资源、预览内容、导出模型与贴图。"
-cover: "/images/bomberstudio-cover.webp"
+cover: "/images/bomberstudio-guide-cover.webp"
 tags: ["工具", "解包", "Unity"]
 ---
 

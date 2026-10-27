@@ -19,11 +19,13 @@ type ActivityRecord = {
 export default function AboutClient({
   contentHtml,
   coverImage,
+  coverVideo,
   activities,
   todayDate,
 }: {
   contentHtml: string,
   coverImage: string,
+  coverVideo?: string,
   activities: ActivityRecord[],
   todayDate: string,
 }) {
@@ -132,7 +134,21 @@ export default function AboutClient({
     <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-[40px] shadow-2xl border border-white/40 dark:border-white/10 overflow-hidden transition-colors duration-700 relative">
 
       <div className="w-full h-40 sm:h-48 md:h-64 relative bg-slate-200 dark:bg-slate-700 overflow-hidden group">
-        <img src={coverImage} alt="个人空间封面" className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
+        {coverVideo ? (
+          <video
+            className="w-full h-full object-cover opacity-95 transition-transform duration-1000 group-hover:scale-105"
+            src={coverVideo}
+            poster={coverImage}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="个人空间封面"
+          />
+        ) : (
+          <img src={coverImage} alt="个人空间封面" className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent"></div>
       </div>
 

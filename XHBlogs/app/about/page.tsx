@@ -53,12 +53,14 @@ export default async function AboutPage() {
   const fullPath = path.join(process.cwd(), 'app', 'about', 'about.md');
   let contentHtml = '<p>更多个人资料正在准备中，之后会在这里补充。</p>';
   let coverImage = siteConfig.defaultPostCover;
+  let coverVideo = '';
 
   try {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     // 🌟 改为 let，以便进行文本预清洗
     let { data, content } = matter(fileContents);
     if (typeof data.cover === 'string' && data.cover) coverImage = data.cover;
+    if (typeof data.coverVideo === 'string' && data.coverVideo) coverVideo = data.coverVideo;
 
     // ==========================================
     // 🌟 解析前物理清洗区
@@ -237,6 +239,7 @@ export default async function AboutPage() {
             <AboutClient
               contentHtml={contentHtml}
               coverImage={coverImage}
+        coverVideo={coverVideo}
               activities={allActivities}
               todayDate={todayDate}
             />

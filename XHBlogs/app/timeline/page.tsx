@@ -26,7 +26,7 @@ export default function Timeline() {
         const fullPath = path.join(postsDirectory, fileName);
 
         const fileContents = fs.readFileSync(fullPath, 'utf8');
-        const { data } = matter(fileContents);
+        const { data, content } = matter(fileContents);
         if (data.draft === true) return;
 
         const postTags = data.tags && Array.isArray(data.tags) ? data.tags : ['未分类'];
@@ -42,6 +42,7 @@ export default function Timeline() {
           description: data.description || '',
           tags: postTags,
           cover: data.cover || siteConfig.defaultPostCover,
+          readingMinutes: Math.max(1, Math.ceil(content.length / 450)),
         });
       });
 

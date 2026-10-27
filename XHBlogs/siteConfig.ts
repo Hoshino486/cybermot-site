@@ -6,7 +6,7 @@ export const siteConfig = {
   authorName: "赛博刹那",
   englishName: "CyberMot",
   siteUrl: "https://bomber.asia",
-  bio: "在数字世界，收藏每一个值得停留的瞬间。",
+  bio: "一位酷爱逆向解包游戏资源的动画人，也是 CS2zeMapper，擅长制作皮肤模型，爱好二次元。",
   navTitle: "CyberMot",
   navSuffix: "/",
   navAfter: "赛博刹那",

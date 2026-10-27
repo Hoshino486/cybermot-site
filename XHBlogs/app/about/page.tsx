@@ -20,6 +20,7 @@ import PageTransition from '../../components/PageTransition';
 import AboutClient from '../../components/AboutClient';
 import { Suspense } from 'react';
 import { siteConfig } from '../../siteConfig';
+import { openExternalInNewTab } from '../../lib/html-links';
 
 export const metadata = {
   title: `关于 ${siteConfig.authorName} | ${siteConfig.englishName}`,
@@ -95,7 +96,7 @@ export default async function AboutPage() {
       .use(rehypeStringify, { allowDangerousHtml: true })
       .process(content);
 
-    contentHtml = processedContent.toString();
+    contentHtml = openExternalInNewTab(processedContent.toString());
   } catch (e) {
     console.error("读取 about.md 失败", e);
   }

@@ -72,6 +72,4 @@ CS2 地图、跑图服、模型相关的交流。
 
 加群请简单说明来意，方便对号入座。
 
----
 
-本站在 [XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs) 开源项目基础上进行个性化制作，保留原项目署名与许可说明。

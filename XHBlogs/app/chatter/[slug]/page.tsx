@@ -24,6 +24,7 @@ import ClientSocials from '../../../components/ClientSocials';
 import SidebarLyric from '../../../components/SidebarLyric';
 import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
+import { openExternalInNewTab } from '../../../lib/html-links';
 
 export const dynamicParams = false;
 
@@ -103,7 +104,7 @@ async function getChatterData(slug: string) {
 
   return {
     slug,
-    contentHtml: processedContent.toString(),
+    contentHtml: openExternalInNewTab(processedContent.toString()),
     title: data.title || '碎片记录',
     date: data.date,
     mood: data.mood,

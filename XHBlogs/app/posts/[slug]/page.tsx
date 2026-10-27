@@ -24,6 +24,7 @@ import ClientTOC from '../../../components/ClientTOC';
 import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
 import SidebarLyric from '../../../components/SidebarLyric';
+import { openExternalInNewTab } from '../../../lib/html-links';
 
 export const dynamicParams = false;
 
@@ -126,7 +127,7 @@ async function getPostData(slug: string) {
 
   return {
     slug,
-    contentHtml: processedContent.toString(),
+    contentHtml: openExternalInNewTab(processedContent.toString()),
     toc: extractToc(content),
     title: data.title,
     date: data.date,

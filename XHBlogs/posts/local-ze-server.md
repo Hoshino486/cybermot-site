@@ -1,30 +1,31 @@
 ---
-title: "从零搭一个本地 CS2 ZE 跑图服"
-date: "2026-10-27T15:00:00+08:00"
-description: "SteamCMD 下载专服、装 Metamod 与 CS2Fixes、配 CounterStrikeSharp、部署 ZePractice，再到本机进图和工坊换图的两段启动。"
+title: "从零搭一个 CS2 跑图服，并装上 ZePractice"
+date: "2026-10-27T15:40:00+08:00"
+description: "SteamCMD 装专服、Metamod 与 CS2Fixes 打底、CounterStrikeSharp 跑插件、配置 ZePractice，再到全部练习与管理命令。"
 cover: "/images/local-server-cover.webp"
 tags: ["工具", "CS2", "教程"]
 ---
 
-上一篇讲的是插件做了什么，这篇讲**怎么把服务器开起来**。
+这篇把整条路走完：**从一台空机器，到一个能 `connect` 进去、能敲 `!zemenu` 的跑图服。**
 
-从一台什么都没装的 Windows 电脑开始，到最后能 `connect 127.0.0.1:27015` 进图跑图。中间有几个坑，我会写清楚。
+中间要装四层东西（专服 → Metamod → CS2Fixes → CounterStrikeSharp），最后才是 ZePractice 这个插件。每一步都写清楚「装到哪、怎么验证」，以及会卡住人的点。
 
-## 一、要准备什么
+## 零、准备
 
-| 项目 | 说明 |
+| 项目 | 要求 |
 |---|---|
-| 系统 | Windows x64（CS2 专服只有 Windows 和 Linux 版，这里只讲 Windows） |
-| 磁盘 | 预留 **60 GB** 以上 |
-| SteamCMD | 下载专服本体用，不需要买游戏 |
-| .NET 10 运行时 | CounterStrikeSharp 要求 |
-| 时间 | 第一次下载大约 20～40 分钟，看网速 |
+| 系统 | Windows x64 |
+| 磁盘 | 60 GB 以上 |
+| SteamCMD | 下载专服本体，匿名登录，不用买游戏 |
+| Steam 客户端 | **要装**，工坊下载依赖它，但不用登录也不用买游戏 |
+| .NET | 10.0 运行时（跑 CSS）；10.0 SDK 只在你自己编译插件时需要 |
+| 时间 | 首次下载 20～40 分钟 |
 
-不需要正版 CS2 账号就能开服（专服是 anonymous 下载），但**你自己要进服，本机得装 CS2 客户端**。
+开服的机器和你打游戏的机器可以是同一台，本机连 `127.0.0.1` 就行。
 
-## 二、下载专服本体
+## 一、装专服本体
 
-先建一个根目录，比如 `D:\cs2server`，把 SteamCMD 解压进去：
+建一个根目录，比如 `D:\cs2server`，把 SteamCMD 解压进去：
 
 ```text
 D:\cs2server\
@@ -32,121 +33,145 @@ D:\cs2server\
     └── steamcmd.exe
 ```
 
-然后在这个目录里执行（**用 cmd 或 PowerShell，路径别带中文**）：
+在 `steamcmd` 目录里新建 `download.bat`：
 
 ```bat
 steamcmd.exe +force_install_dir D:\cs2server\cs2 +login anonymous +app_update 730 validate +quit
+pause
 ```
 
-装完的结构是：
+双击运行，等它下完。结构是：
 
 ```text
 D:\cs2server\cs2\
 └── game\
-    ├── bin\win64\cs2.exe        ← 服务端主程序
+    ├── bin\win64\cs2.exe      ← 服务端主程序
     └── csgo\
         ├── cfg\
-        ├── addons\             ← 插件都装这里
+        ├── addons\           ← 所有插件装这里
         └── maps\
 ```
 
-> `+app_update 730` 就是 CS2 本体，专服和客户端是同一个 app id。别去找什么 740。
+> `730` 就是 CS2 本体的 app id，专服和客户端共用。网上的 `740` 是 CS:GO 时代的，别用。
 
-以后更新专服，重复同一条命令即可 —— 但**必须先关掉服**。
+以后更新专服重复这条命令，但**必须先关掉服务器**。
 
-## 三、装 Metamod:Source
+## 二、装 Metamod:Source
 
-所有插件的地基。去 Metamod 官网下载 **2.0 的 dev 版**（CS2 必须用 2.0，1.x 是 CS:GO 的）。
+所有插件的底座。去 [metamodsource.net](https://www.metamodsource.net/) 下 **2.0 的 dev 版**（CS2 必须 2.0，1.x 是 CS:GO 的）。
 
-解压后把 `addons\metamod` 整个目录放到：
+把解压出的 `addons\metamod` 整个目录放到：
 
 ```text
 game\csgo\addons\metamod\
 ```
 
-然后**改 `game\csgo\gameinfo.gi`**：找到 `SearchPaths` 段，在 `Game csgo` 那行下面加一行：
-
-```text
-Game    csgo/addons/metamod
-```
-
-改完大概是这样：
+然后改 `game\csgo\gameinfo.gi`，在 `SearchPaths` 里加一行：
 
 ```text
 SearchPaths
 {
     Game    csgo
-    Game    csgo/addons/metamod
+    Game    csgo/addons/metamod     ← 加这行
     Game    csgo/bin/win64
     ...
 }
 ```
 
-> ⚠️ 每次 Steam 校验或更新专服，`gameinfo.gi` 都可能被还原 —— 插件突然全没了，先看这一行还在不在。
+位置在 `Game csgo` 下一行即可（一般第 22 行附近）。
 
-## 四、装 CS2Fixes
+> ⚠️ 每次 SteamCMD 校验或更新专服，`gameinfo.gi` 都可能被还原。症状是「插件全部消失」——先回来看看这行还在不在。
 
-CS2Fixes 是 CS2 的实体修补和地图参数层，ZE 地图的 boss、传送、计时都依赖它。
+## 三、装 CS2Fixes
 
-把发布包解压到：
+CS2Fixes 负责实体修补和地图参数，ZE 地图的 boss、传送、倒计时都依赖它。
+
+从 [Source2ZE/CS2Fixes](https://github.com/Source2ZE/CS2Fixes) 下载发布包，解压到：
 
 ```text
 game\csgo\addons\cs2fixes\
 ```
 
-它的配置文件在 `addons\cs2fixes\configs\`，其中 `maplist.jsonc` 是地图列表。**这个文件后面配工坊地图要用到**，先记住位置。
+配置在 `addons\cs2fixes\configs\`，其中 `maplist.jsonc` 是地图列表，后面配工坊地图要用。
 
-## 五、装 CounterStrikeSharp
+## 四、装 CounterStrikeSharp
 
-ZePractice 是跑在 CounterStrikeSharp 上的，所以这是必需品。
+ZePractice 跑在 CounterStrikeSharp（CSS）上。
 
-1. 下载 CSS 的发布包，解压到 `game\csgo\addons\counterstrikesharp\`
-2. 装 **.NET 10 运行时**（桌面运行时和 ASP.NET Core 运行时都要，或者直接装 SDK）
-3. 首次启动时 CSS 会自己初始化目录结构
+1. 从 [roflmuffin/CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) 下发布包
+2. 解压到 `game\csgo\addons\counterstrikesharp\`
+3. 装 **.NET 10 运行时**（不是只有 SDK）
 
 装好后应该有：
 
 ```text
 addons\counterstrikesharp\
-├── api\                 ← 插件编译时引用这里的 DLL
-├── plugins\             ← 插件放这里
-├── configs\plugins\     ← 插件配置放这里
-└── dotnet\              ← 运行时
+├── api\             ← 编译插件时引用这里的 DLL
+├── plugins\         ← 插件放这里
+├── configs\plugins\ ← 插件配置
+└── dotnet\          ← 运行时
 ```
 
-## 六、部署 ZePractice
+## 五、装上 ZePractice
 
-两种方式，二选一。
-
-**用编译好的 DLL**：把 `ZePractice.dll` 放到
+把 `ZePractice.dll` 放到：
 
 ```text
 game\csgo\addons\counterstrikesharp\plugins\ZePractice\ZePractice.dll
 ```
 
-**自己编译**（装了 .NET SDK 10）：
+自己编译：
 
 ```powershell
 dotnet build ZePractice.csproj -c Release -p:CssApiDir="D:\cs2server\cs2\game\csgo\addons\counterstrikesharp\api"
 ```
 
-第一次启动后，配置会生成在：
+**第一次启动后**配置才会生成：
 
 ```text
 game\csgo\addons\counterstrikesharp\configs\plugins\ZePractice\ZePractice.json
 ```
 
-把**自己的 SteamID64** 填进 `OwnerSteamIds`：
+## 六、改配置：先把这五项填对
+
+配置项很多，跑起来先改这几个就够：
+
+| 配置项 | 默认 | 说明 |
+|---|---|---|
+| `OwnerSteamIds` | `[]` | **必填**，服主 SteamID64 列表 |
+| `PracticeMode` | `true` | 练习模式（跑图就要这个） |
+| `AllowEveryonePracticeCommands` | `true` | 允许所有人用 `!ze_god` 这类练习指令 |
+| `TrustLoopbackAdmin` | `true` | 本机玩家自动拿临时管理权限，单人调试省事 |
+| `MenuUiMode` | `"chat"` | 菜单用聊天框渲染；装了工坊界面包可改 `panorama` |
 
 ```jsonc
-"OwnerSteamIds": ["7656119xxxxxxxxxx"]
+{
+  "OwnerSteamIds": ["7656119xxxxxxxxxx"],
+  "PracticeMode": true,
+  "AllowEveryonePracticeCommands": true,
+  "TrustLoopbackAdmin": true
+}
 ```
 
-不知道自己的 SteamID64？进服后聊天框敲 `!ze_whoami`，它会回给你。
+> 不知道自己 SteamID64？进服敲 `!ze_whoami`，它会回给你。
+
+其余按需开，默认值一般够用：
+
+| 分组 | 关键项 | 作用 |
+|---|---|---|
+| 自动复活 | `AutoRespawn` / `RespawnDelaySeconds` | 死了自动复活，默认 1 秒 |
+| 弹药与碰撞 | `UnlimitedAmmo` / `NoBlock` | 无限弹药、玩家不互相挤 |
+| 地图参数 | `ApplyFysMapParameters` / `FysRoot` | 读取 FYS 地图参数（boss、参数、翻译） |
+| HUD | `BossHud` / `MapTranslations` / `TranslationCountdown` | boss 血条、地图翻译、倒计时 |
+| 工坊 | `WorkshopUpdates.CheckIntervalSeconds` | 默认 60 秒查一次更新 |
+| 换图 | `MapVote.MaximumCandidates` | 候选图上限 |
+| 标记 | `MapMarkers.ButtonChickens` / `MapWeaponGlow` | 按钮绿鸡、地图枪发光 |
+| 指挥 | `Commander.Enabled` | 默认关；要先发布并挂载对应工坊资源包才能开 |
+| 神器 | `EnableItemWatch` | 神器绑定诊断，管理员用 `!itemwatch` |
 
 ## 七、准备 server.cfg
 
-在 `game\csgo\cfg\ze-practice\` 建一个 `server.cfg`。跑图服默认要关掉一大堆「正常对局」的规则，一份能用的最小配置：
+在 `game\csgo\cfg\ze-practice\` 建 `server.cfg`：
 
 ```text
 hostname "ZE Practice"
@@ -160,30 +185,24 @@ mp_freezetime 0          // 取消开局定身
 mp_autokick 0            // 不自动踢人
 mp_autoteambalance 0     // 不自动平衡
 mp_limitteams 99         // 不限制人数差
-mp_buy_anywhere 1        // 去除购买区域限制
+mp_buy_anywhere 1        // 去掉购买区域限制
 sv_infinite_ammo 1       // 无限弹药
 sv_falldamage_scale 0    // 取消摔伤
 bot_quota 1
-bot_stop 1               // Bot 不要乱跑
+bot_stop 1               // Bot 别乱跑
 ```
 
-`sv_lan 1` 表示只在本机/局域网用，不会被公网扫到。
-
-RCON 密码建议单独放一个文件，别写死在多个地方：
+RCON 密码单独放一个文件，别写死在多处：
 
 ```text
 game\csgo\cfg\ze-practice\rcon.generated.cfg
 ```
-
-内容就一行：
 
 ```text
 rcon_password "自己生成一串"
 ```
 
 ## 八、启动
-
-真正跑起来的命令长这样：
 
 ```bat
 cs2.exe -dedicated -insecure -console -usercon ^
@@ -196,70 +215,53 @@ cs2.exe -dedicated -insecure -console -usercon ^
   +map de_dust2
 ```
 
-逐段解释：
-
 | 参数 | 作用 |
 |---|---|
 | `-dedicated` | 专服模式 |
-| `-insecure` | 关 VAC，本地测试用；公网服不要加 |
-| `-console -usercon` | 开控制台，并允许 RCON |
-| `-consolelog_append` | 控制台输出追加到日志文件 |
-| `-ip / -port` | 绑定地址和端口 |
-| `+servercfgfile` | 指定每次换图都执行的 cfg |
-| `+game_alias casual` | 游戏模式别名 |
-| `+exec ...` | 执行 RCON 密码和服务器 cfg |
-| `+map de_dust2` | **先加载一张内置图** |
+| `-insecure` | 关 VAC，本地测试用；公网服别加 |
+| `-console -usercon` | 开控制台并允许 RCON |
+| `-consolelog_append` | 控制台输出写日志 |
+| `-ip` / `-port` | 绑定地址与端口 |
+| `+servercfgfile` | 每次换图都执行的 cfg |
+| `+game_alias casual` | 游戏模式 |
+| `+exec` | 执行 RCON 密码和服务器配置 |
+| `+map de_dust2` | **先加载一张内置图**（原因见下节） |
 
-看到控制台刷出 `ss_loading -> ss_active`，就说明地图进 active 了。
+**两个常见卡点：**
 
-> 如果你的启动命令里没写 `+exec`，进服后**要在服务器控制台补一条 `exec ze-practice/server.cfg`**，否则上面的参数一条都没生效 —— 这是很多人「怎么无敌用不了」的原因。
+1. **第一次启动闪退** —— 大概率不是参数错，是这台机器没装 Steam 客户端。装上（不用登录）再启动就好。
+2. **参数没生效** —— 启动命令里没写 `+exec` 的话，进服后在服务器控制台补一句 `exec ze-practice/server.cfg`，否则那些参数一条都没读。
 
-### 一个容易卡住的点：Steam 客户端
+看到控制台刷出 `ss_loading -> ss_active`，说明地图进 active 了。
 
-第一次启动如果**闪退**，大概率不是参数写错，而是这台机器上**没装 Steam 客户端**。
+## 九、进图与工坊两段启动
 
-CS2 专服本身用 SteamCMD 就能跑，但工坊地图的下载、`SteamGameServer` 的初始化走的是本机 Steam 客户端那套组件。装上 Steam 就行 —— **不需要登录、也不需要买游戏**，默认路径装完就行。
-
-装完再启动一次，就不会闪退了。
-
-## 九、本机进图
-
-打开你本机的 CS2 客户端，按 `~` 打开控制台：
+本机客户端按 `~` 打开控制台：
 
 ```text
 connect 127.0.0.1:27015
 ```
 
-进图后敲 `!zemenu`，能弹出中文菜单就说明 ZePractice 正常加载了。
+进图后敲 `!zemenu`，能弹菜单就说明插件正常。
 
-## 十、换工坊地图：为什么要两段启动
-
-这是最容易踩的坑。
-
-很多人以为启动参数里写 `+host_workshop_map 3817448617` 就能直接开工坊图。实测**不行** —— 服务器会停在 `Idle console`，地图永远不加载。
-
-正确做法是**两段**：
-
-1. 先用 `+map de_dust2` 启动，等内置图进入 active、RCON 就绪
-2. 再通过 RCON 发一条命令：
+**换工坊地图是最大的坑。** 直接把 `+host_workshop_map` 写进启动参数，服务器会卡在 `Idle console`，地图永远不加载。正确做法是两段：
 
 ```text
-host_workshop_map 3817448617
+第一段：+map de_dust2                  启动内置图
+第二段：host_workshop_map 3817448617    （等 active 后，用 RCON 发）
 ```
 
-然后服务器才会去下载、挂载工坊地图，最终切过去。日志里会出现：
+日志里会出现：
 
 ```text
 Loading custom game "3817448617" with map "ze_forhidden_slicoo_cn"
 ```
 
-**为什么要先加载 de_dust2？** 因为 SteamGameServer、UGC 下载和 game frame 都要等第一张图跑起来才存在。没有这些，工坊下载根本没有执行环境。
+原因：**SteamGameServer、UGC 下载和 game frame 都要等第一张图跑起来才存在**，没有这些，工坊下载没有执行环境。
 
-等地图 active 通常要 10～30 秒，启动器给的是 90 秒上限 —— 这是**引导就绪期限**，不是地图下载期限。
+### 地图列表里的工坊 ID 要写对
 
-## 十一、让地图列表认识工坊 ID
-
-CS2Fixes 的 `maplist.jsonc` 里，每个地图条目可以带一个数字的 `workshop_id`：
+CS2Fixes 的 `maplist.jsonc`：
 
 ```jsonc
 {
@@ -272,68 +274,108 @@ CS2Fixes 的 `maplist.jsonc` 里，每个地图条目可以带一个数字的 `w
 }
 ```
 
-注意是 **`workshop_id`**、数字、不是字符串：
-
-- ❌ `"publishedfileid"` —— 不是这个字段名
+- ✅ `"workshop_id": 3817448617`（数字）
+- ❌ `"publishedfileid"` —— 字段名不对
 - ❌ `"workshop_id": "3817448617"` —— 字符串不认
-- ✅ `"workshop_id": 3817448617`
 
-配好之后，`!ze_map ze_forhidden_slicoo_cn` 会保留工坊身份，走 `host_workshop_map`；没配 ID 的地图还是走本地文件。
+配好后 `!ze_map <地图名>` 会保留工坊身份，走 `host_workshop_map`。
 
-## 十二、常见问题
+## 十、命令手册
 
-**服务器窗口一直 `Idle console`**
-直接用了 `host_workshop_map` 冷启动。改成先 `+map de_dust2`，再 RCON 发命令。
+### 菜单怎么开
 
-**插件一个都没加载**
-按顺序查：`gameinfo.gi` 里 `addons/metamod` 还在不在 → Metamod 日志有没有加载 → CSS 的 `dotnet` 目录在不在 → `plugins` 目录结构对不对。
-
-**CSS 报找不到 .NET 运行时**
-装 .NET 10 的**运行时**（不是只有 SDK），或者重启服务器进程。
-
-**地图进去了但模型/贴图缺失**
-资源没有打进同一个工坊条目。主地图、skybox、模型、材质、声音、脚本要在**同一个 Workshop 项**里，否则别人下载到的只有空地图。
-
-**朋友连不上**
-先确认你是 `sv_lan 1` + `127.0.0.1` —— 这个配置只有本机能连。局域网要绑 `0.0.0.0` 并放行防火墙；公网还要端口映射，不是改个 IP 就完事。
-
-**改了配置没生效**
-分清楚哪些要重载、哪些要重开服：
-
-| 改了什么 | 怎么生效 |
+| 按键 | 作用 |
 |---|---|
-| `server.cfg` | 换图 |
-| 插件 JSON 配置 | 重开服 |
-| 地图实体（Stripper） | 重载地图 |
-| 插件 DLL | 重开服 |
+| `F9` / `Z` | 主菜单 |
+| `F10` | 聊天数字菜单 |
+| `7` / `8` | 翻页 |
+| `9` | 返回 |
+| `0` | 关闭 |
 
-## 十三、开服检查清单
+也可以直接敲 `!zemenu`。所有聊天命令以 `!` 开头；控制台里对应写法是 `css_` 前缀。
+
+### 练习跑图（练习模式）
+
+| 命令 | 作用 |
+|---|---|
+| `!ze_god` | 无敌 |
+| `!ze_noclip` | 穿墙 |
+| `!ze_save` | 存一个点 |
+| `!ze_tp` | 回到存点 |
+| `!ze_reset` | 清掉存点 |
+| `!ze_respawn` | 原地复活 |
+| `!ze_goto <玩家>` | 传送到某人身边 |
+| `!zerefill` | 补满弹药和道具 |
+
+存档点**按地图隔离**，新回合/换图自动清理；多人 ZE 下这些会被撤销。
+
+### 玩家通用
+
+| 命令 | 作用 |
+|---|---|
+| `!zemenu` / `!zhelp` / `!ze_status` | 菜单、帮助、地图与配置状态 |
+| `!ze_maps [筛选]` | 候选选图 |
+| `rtv` | 换图投票，**严格超过 80%** 才生效 |
+| `!items` | 当前地图神器持有者与冷却 |
+| `!zeweapon` / `!zebuy <名称>` | 补给武器与手雷 |
+| `!zeclass` / `!zskill` | 职业与技能 |
+| `!ze_whoami` | 本人 SteamID64 与权限 |
+
+### 管理员
+
+用 `!zeadmin` 打开管理菜单，或者直接敲：
+
+| 命令 | 作用 |
+|---|---|
+| `!ze_mode practice` / `!ze_mode ze` | 切换练习 / 多人 ZE |
+| `!ze_restart` / `!ze_reload` | 重启回合 / 重载本图配置 |
+| `!ze_map <完整地图名>` | 切换本机已装地图 |
+| `!ze_respawn` / `!ze_bring` / `!ze_slay` / `!ze_kick` / `!ze_team` | 玩家管理，目标支持 `#userid`、SteamID64、唯一名称 |
+| `!ze_ban <玩家> [分钟] [原因]` | 默认 60 分钟，`0` 为永久 |
+| `!ze_mute` / `!ze_gag` | 默认 30 分钟 |
+| `!ze_unban` / `!ze_unmute` / `!ze_ungag` / `!ze_punishments` | 解除与查看（只管本插件的处罚） |
+| `!itemwatch` | 神器绑定诊断 |
+
+处罚记录存在插件自己的 `data\punishments.json`，不会覆盖 CS2Fixes 的名单。
+
+## 十一、排错
+
+| 现象 | 先查什么 |
+|---|---|
+| 一直 `Idle console` | 是不是用了 `host_workshop_map` 冷启动，改成先 `+map de_dust2` |
+| 插件全没加载 | `gameinfo.gi` 里 `addons/metamod` 那行还在不在 |
+| CSS 报缺 .NET | 装 .NET 10 **运行时**，再重启服务器进程 |
+| 进图没 HUD / 没菜单 | 看 `configs\plugins\ZePractice\` 配置有没有生成、有没有语法错误 |
+| 地图进去了但模型缺失 | 资源没打进同一个工坊条目，别人下到的是空壳 |
+| 朋友连不上 | `sv_lan 1` + `127.0.0.1` 只有本机能连；局域网要绑 `0.0.0.0` 并放行防火墙 |
+| 改了配置没反应 | cfg 换图生效、插件 JSON 重开服生效、实体改重载地图生效 |
+
+## 十二、检查清单
 
 ```
 □ steamcmd +app_update 730 validate 跑完
+□ Steam 客户端已安装（不用登录）
 □ gameinfo.gi 里有 Game csgo/addons/metamod
-□ addons/cs2fixes 存在，maplist.jsonc 配好 workshop_id
+□ addons/cs2fixes 存在，maplist.jsonc 的 workshop_id 是数字
 □ addons/counterstrikesharp/dotnet 存在
 □ plugins/ZePractice/ZePractice.dll 存在
 □ ZePractice.json 里 OwnerSteamIds 是自己的 SteamID64
-□ cfg/ze-practice/server.cfg 和 rcon.generated.cfg 存在
+□ cfg/ze-practice/server.cfg + rcon.generated.cfg 存在
 □ 启动参数里先 +map de_dust2
 □ 控制台出现 ss_loading -> ss_active
-□ 客户端 connect 127.0.0.1:27015 进图，!zemenu 有反应
+□ 客户端 connect 127.0.0.1:27015，!zemenu 有反应
+□ !ze_god 能开、!ze_save / !ze_tp 能用
 ```
 
-十项全过，服就是通的。
+十二项全过，就是一个能跑的跑图服。
+
+## 参考
+
+- UB 社区[《保姆级教程：CS2 多人跑图服务器 + 插件安装》](https://bbs.moeub.cn/forum.php?mod=viewthread&tid=12832) —— 本文 `server.cfg` 参数和「装 Steam 客户端」这一点来自这里
+- [SteamCMD 文档](https://developer.valvesoftware.com/wiki/SteamCMD) · [Metamod:Source](https://www.metamodsource.net/) · [CS2Fixes](https://github.com/Source2ZE/CS2Fixes) · [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 
 ## 源码
 
 插件本体：<https://github.com/Hoshino486/ZePractice>
 
-仓库的 `tools/` 目录里有启动、预检、更新和回滚脚本，`服务器使用教程.md` 是更详细的命令与配置说明。
-
-## 参考
-
-- UB 社区的[《保姆级教程：CS2 多人跑图服务器 + 插件安装》](https://bbs.moeub.cn/forum.php?mod=viewthread&tid=12832) —— 本文的 server.cfg 参数和「先装 Steam 客户端」这一点来自这里，适合完全没接触过专服的人对照看
-- [SteamCMD 官方文档](https://developer.valvesoftware.com/wiki/SteamCMD)
-- [Metamod:Source](https://www.metamodsource.net/) · [CS2Fixes](https://github.com/Source2ZE/CS2Fixes) · [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
-
-和那篇教程有一处不同：它是在服务器跑起来后**手动在控制台敲** host_workshop_map，本文把它写成了启动器的自动流程 —— 原理一样，自动化之后你双击一次就够了。
+仓库里 `tools/` 是启动、预检、更新和回滚脚本，`服务器使用教程.md` 有更细的说明（地图参数、Boss、翻译、神器、朋友管理）。

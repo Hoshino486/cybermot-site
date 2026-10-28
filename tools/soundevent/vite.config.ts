@@ -6,7 +6,7 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: './', // Suitable for GitHub Pages
+  base: '/tools/soundevent/', // Served from the CyberMot blog
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),

@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  async rewrites() {
+    return [{ source: "/tools/soundevent", destination: "/tools/soundevent/index.html" }];
+  },
 };
 
 export default nextConfig;
-

@@ -31,7 +31,7 @@ export const HeaderBar: React.FC = () => {
         {/* Title */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <a
-            href="/projects#tools"
+            href="/toolbox"
             target="_top"
             className="h-7 w-7 inline-flex items-center justify-center border border-gray-200 dark:border-gray-800 hover:border-black dark:hover:border-white rounded-sm text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors shrink-0"
             title="返回 CyberMot 工具列表"

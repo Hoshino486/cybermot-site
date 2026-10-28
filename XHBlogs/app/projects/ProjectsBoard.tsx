@@ -3,7 +3,9 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackButton from '../../components/BackButton'; // 注意层级路径
+import ToolsSection from '../../components/ToolsSection';
 import { projectsData } from '../../data/projects';
+import { toolsData } from '../../data/tools';
 
 export default function ProjectsBoard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,6 +19,16 @@ export default function ProjectsBoard() {
       project.name.toLowerCase().includes(query) ||
       project.description.toLowerCase().includes(query) ||
       project.tags.some(tag => tag.toLowerCase().includes(query))
+    );
+  }, [searchQuery]);
+
+  const hasMatchingTools = useMemo(() => {
+    if (searchQuery.trim() === "") return true;
+    const query = searchQuery.trim().toLowerCase();
+    return toolsData.some(tool =>
+      tool.name.toLowerCase().includes(query) ||
+      tool.description.toLowerCase().includes(query) ||
+      tool.tags.some(tag => tag.toLowerCase().includes(query))
     );
   }, [searchQuery]);
 
@@ -43,7 +55,7 @@ export default function ProjectsBoard() {
         <div className="relative w-full max-w-lg">
           <input
             type="text"
-            placeholder="搜索项目名称、描述或技术栈..."
+            placeholder="搜索项目、工具、描述或技术栈..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 rounded-full px-6 py-3 pl-12 text-slate-800 dark:text-white shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-slate-500 font-serif"
@@ -105,7 +117,7 @@ export default function ProjectsBoard() {
           ))}
         </AnimatePresence>
 
-        {filteredProjects.length === 0 && (
+        {filteredProjects.length === 0 && !hasMatchingTools && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -115,6 +127,8 @@ export default function ProjectsBoard() {
           </motion.div>
         )}
       </motion.div>
+
+      <ToolsSection query={searchQuery} />
 
     </div>
   );

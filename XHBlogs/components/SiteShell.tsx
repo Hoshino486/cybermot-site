@@ -16,6 +16,11 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [router]);
+
+  if (pathname.startsWith('/tools')) {
+    return <div className="tool-shell" id="page-content">{children}</div>;
+  }
+
   return <div className={pathname === '/' ? 'site-shell' : 'site-shell inner-page'}>
     <AnimeBackdrop/>
     <div id="page-content">{children}</div>

@@ -1,14 +1,14 @@
 ---
 title: "从零搭一个 CS2 跑图服，并装上 ZePractice"
 date: "2026-10-27T15:40:00+08:00"
-description: "SteamCMD 装专服、Metamod 与 CS2Fixes 打底、CounterStrikeSharp 跑插件、配置 ZePractice，再到全部练习与管理命令。"
+description: "SteamCMD 装专服、Metamod 与 CS2Fixes 打底、CounterStrikeSharp 跑插件、配置 ZePractice 与工坊资源，再到全部练习与管理命令。"
 cover: "/images/local-server-cover.webp"
 tags: ["工具", "CS2", "教程"]
 ---
 
 这篇把整条路走完：**从一台空机器，到一个能 `connect` 进去、能敲 `!zemenu` 的跑图服。**
 
-中间要装四层东西（专服 → Metamod → CS2Fixes → CounterStrikeSharp），最后才是 ZePractice 这个插件。每一步都写清楚「装到哪、怎么验证」，以及会卡住人的点。
+中间要装四层东西（专服 → Metamod → CS2Fixes → CounterStrikeSharp），最后才是 ZePractice 这个插件；装完还要把工坊资源接上，玩家才看得到界面和模型。每一步都写清楚「装到哪、怎么验证」，以及会卡住人的点。
 
 ## 零、准备
 
@@ -126,6 +126,8 @@ game\csgo\addons\counterstrikesharp\plugins\ZePractice\ZePractice.dll
 dotnet build ZePractice.csproj -c Release -p:CssApiDir="D:\cs2server\cs2\game\csgo\addons\counterstrikesharp\api"
 ```
 
+> 当前版本 **1.7.26**。插件从 1.6 起支持个人练习 Bot，1.7 起加了运行诊断 HUD 和逐指令权限，下面的命令表按这个版本写。
+
 **第一次启动后**配置才会生成：
 
 ```text
@@ -168,6 +170,18 @@ game\csgo\addons\counterstrikesharp\configs\plugins\ZePractice\ZePractice.json
 | 标记 | `MapMarkers.ButtonChickens` / `MapWeaponGlow` | 按钮绿鸡、地图枪发光 |
 | 指挥 | `Commander.Enabled` | 默认关；要先发布并挂载对应工坊资源包才能开 |
 | 神器 | `EnableItemWatch` | 神器绑定诊断，管理员用 `!itemwatch` |
+
+### 6.1 逐指令权限
+
+除了 `OwnerSteamIds`，还有一份**运行期权限文件**：
+
+```text
+plugins\ZePractice\data\permissions.json
+```
+
+它管的是「谁能用哪条命令」——比如允许某个管理员换图但不能封人。改完不用重启，服里敲 `!ze_permissions_reload` 原子重读；文件写错也不会丢权限，会保留上一份有效的。
+
+> 只改源码里的模板不会影响已经在跑的服务器。
 
 ## 七、准备 server.cfg
 
@@ -280,7 +294,84 @@ CS2Fixes 的 `maplist.jsonc`：
 
 配好后 `!ze_map <地图名>` 会保留工坊身份，走 `host_workshop_map`。
 
-## 十、命令手册
+## 十、配置服务器资源（玩家能看到的东西）
+
+跑图服有两类 Workshop 资源，**别混为一谈**：
+
+| 类型 | 例子 | 作用 |
+|---|---|---|
+| **主地图** | `3817448617` → `ze_forhidden_slicoo_cn` | 玩家要跑的那张图，含地图本体、skybox、模型、声音 |
+| **资源包** | `3818340815` → `saibochana_Server` | 界面、无线电选项表、自定义模型贴图，**不是地图** |
+
+地图用 `host_workshop_map` 加载；资源包走 **MultiAddonManager** 挂载。两者 ID 不能互相顶替。
+
+### 10.1 资源包里放什么
+
+一个能用的资源包通常只有几个文件：
+
+```text
+panorama/layout/custom_game/...   动态界面布局
+resource/ui/radiopanel.txt        无线电选项表
+addoninfo.txt                     条目信息
+```
+
+⚠️ **布局只能放在 `panorama/layout/custom_game/` 下面。** 放到 `panorama/layout/hud/` 这类路径，进服会直接报致命错误：
+
+```text
+Addons can only add layouts in the panorama/layout/custom_game/ subdirectory
+```
+
+### 10.2 服务端挂载：MultiAddonManager
+
+装好 MultiAddonManager 后，配置在：
+
+```text
+game\csgo\cfg\multiaddonmanager\multiaddonmanager.cfg
+```
+
+```text
+mm_extra_addons "3818340815"
+mm_addon_mount_download 1
+mm_cache_clients_with_addons 0
+```
+
+- `mm_extra_addons`：要挂的资源包 ID，多个用空格分隔
+- `mm_addon_mount_download 1`：服务器自己也要下载并挂载
+- `mm_cache_clients_with_addons 0`：不要缓存带资源的客户端，换包时更省心
+
+**用 `mm_extra_addons`，不要用只给客户端的 `mm_client_extra_addons`** —— 服务端得先有这份资源，才能做预缓存和一致性校验。
+
+### 10.3 打包和更新
+
+重新打包上工坊时有两个坑：
+
+1. **Workshop Manager 的目录白名单默认不含 `resource/ui`**，从展开目录选文件会漏掉 `radiopanel.txt`。要显式构建 VPK，别指望它会自动收全。
+2. **上传成功 ≠ 服务器能下载。** 新条目刚发布时可能返回 `Access is denied. (15)`，要等 Steam 那边真正可下载。
+
+更新流程：
+
+```text
+steamcmd +login 你的Steam账号 +workshop_build_item <workshop-update.vdf> +quit
+```
+
+> 描述文件里锁 `appid=730` 和 `publishedfileid=<同一个 ID>`，只更新内容、不动标题和预览图。
+
+### 10.4 第一次挂载会让地图重载
+
+MultiAddonManager 首次下载完成时可能触发一次地图重载。所以**在没人跑图的时候接资源**，别在满人的时候改 `mm_extra_addons`。
+
+想临时摘掉资源，把 `mm_extra_addons` 改回 `""` 再开服即可，地图和其他插件不受影响。
+
+### 10.5 本地开发用的资源挂载
+
+还没发布到工坊的资源，可以走本地 addon：在 `server-settings.json` 里加
+
+```jsonc
+"AssetMounts": ["csgo_addons/ze_forhidden_slicoo_cn"]
+```
+
+启动器会把它加进 `gameinfo.gi` 的搜索路径。**这只是本地开发路径**：别的玩家没有这份文件，连进来只会看到缺失或紫黑材质。要给别人看，必须发布到工坊。
+## 十一、命令手册
 
 ### 菜单怎么开
 
@@ -294,6 +385,16 @@ CS2Fixes 的 `maplist.jsonc`：
 
 也可以直接敲 `!zemenu`。所有聊天命令以 `!` 开头；控制台里对应写法是 `css_` 前缀。
 
+1.7 之后多了几个入口，比记命令更好用：
+
+| 命令 | 作用 |
+|---|---|
+| `!ze` | 主菜单，按你本人的权限显示可用的命令列表 |
+| `!ze_public` | 公开玩法菜单（补给、Bot、诊断都在里面） |
+| `!ze_practice` | 个人跑图辅助菜单 |
+| `!ze_commands [关键词]` | 列出你当前权限能用的所有命令 |
+| `!ze_binds` | 快捷键说明（只显示文字，不会替别人写按键） |
+
 ### 练习跑图（练习模式）
 
 | 命令 | 作用 |
@@ -306,6 +407,8 @@ CS2Fixes 的 `maplist.jsonc`：
 | `!ze_respawn` | 原地复活 |
 | `!ze_goto <玩家>` | 传送到某人身边 |
 | `!zerefill` | 补满弹药和道具 |
+| `!ze_clearcheckpoint` | 清掉自己的存点（等同 `!ze_reset`） |
+| `!ze_speed [on/off]` | 切自己的移动参数 |
 
 存档点**按地图隔离**，新回合/换图自动清理；多人 ZE 下这些会被撤销。
 
@@ -320,6 +423,22 @@ CS2Fixes 的 `maplist.jsonc`：
 | `!zeweapon` / `!zebuy <名称>` | 补给武器与手雷 |
 | `!zeclass` / `!zskill` | 职业与技能 |
 | `!ze_whoami` | 本人 SteamID64 与权限 |
+| `!items` / `!bossstatus` | 神器与 Boss 状态 |
+| `!ze_diag [on/off]` | 服务器运行诊断 HUD（默认开，无需权限） |
+| `!ze_diag_status` | 看一次实时快照 |
+
+### 练习 Bot
+
+一个人跑图时用来配合机关，全员可用：
+
+| 命令 | 作用 |
+|---|---|
+| `!ze_bot_add [t\|ct\|ally\|enemy]` | 加一只 Bot，不带参数默认敌方 |
+| `!ze_bot_move [编号]` | 把 Bot 传到自己身边；不带编号会弹编号列表，`all` 才传全部 |
+| `!ze_bot_kill [编号]` / `!ze_bot_clear` | 杀掉某只 / 全部清掉 |
+| `!ze_bot_status` / `!ze_bot_hp <血量>` | 查看状态 / 设置血量 |
+
+普通玩家双方合计最多两只，服主不限个人数量。
 
 ### 管理员
 
@@ -334,11 +453,13 @@ CS2Fixes 的 `maplist.jsonc`：
 | `!ze_ban <玩家> [分钟] [原因]` | 默认 60 分钟，`0` 为永久 |
 | `!ze_mute` / `!ze_gag` | 默认 30 分钟 |
 | `!ze_unban` / `!ze_unmute` / `!ze_ungag` / `!ze_punishments` | 解除与查看（只管本插件的处罚） |
+| `!ze_respawn_other <玩家>` | 复活别人（不占用自己的练习复活次数） |
+| `!ze_permissions_reload` | 重读 `data\permissions.json`，失败保留上一份有效权限 |
 | `!itemwatch` | 神器绑定诊断 |
 
 处罚记录存在插件自己的 `data\punishments.json`，不会覆盖 CS2Fixes 的名单。
 
-## 十一、排错
+## 十二、排错
 
 | 现象 | 先查什么 |
 |---|---|
@@ -350,7 +471,7 @@ CS2Fixes 的 `maplist.jsonc`：
 | 朋友连不上 | `sv_lan 1` + `127.0.0.1` 只有本机能连；局域网要绑 `0.0.0.0` 并放行防火墙 |
 | 改了配置没反应 | cfg 换图生效、插件 JSON 重开服生效、实体改重载地图生效 |
 
-## 十二、检查清单
+## 十三、检查清单
 
 ```
 □ steamcmd +app_update 730 validate 跑完
@@ -360,6 +481,7 @@ CS2Fixes 的 `maplist.jsonc`：
 □ addons/counterstrikesharp/dotnet 存在
 □ plugins/ZePractice/ZePractice.dll 存在
 □ ZePractice.json 里 OwnerSteamIds 是自己的 SteamID64
+□ multiaddonmanager.cfg 里 mm_extra_addons 填了资源包 ID（不是地图 ID）
 □ cfg/ze-practice/server.cfg + rcon.generated.cfg 存在
 □ 启动参数里先 +map de_dust2
 □ 控制台出现 ss_loading -> ss_active

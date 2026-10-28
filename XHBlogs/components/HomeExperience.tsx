@@ -20,6 +20,56 @@ const destinations = [
 ];
 const formatDate = (date: string) => date ? date.slice(0, 10).replaceAll('-', '.') : '';
 
+type CoverFx = 'wave' | 'scan' | 'terminal' | 'grid' | 'shine';
+
+// 按文章内容挑一个封面动态签名：音频是频谱，ZE 是准星扫描，服务器是终端，工具是网格。
+function coverFxFor(post: PostSummary): CoverFx {
+  const slug = post.slug.toLowerCase();
+  const tags = post.tags.join(' ');
+  if (slug.includes('soundevent') || tags.includes('音频')) return 'wave';
+  if (slug.includes('ze-practice')) return 'scan';
+  if (slug.includes('local-ze-server')) return 'terminal';
+  if (slug.includes('bomberstudio')) return 'grid';
+  if (tags.includes('CS2')) return 'scan';
+  if (tags.includes('工具')) return 'grid';
+  return 'shine';
+}
+
+function CoverFxLayer({ variant }: { variant: CoverFx }) {
+  return (
+    <span className="cover-fx" data-fx={variant} aria-hidden="true">
+      <span className="fx-corners" />
+      {variant === 'wave' && (
+        <span className="fx-eq">
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <i
+              key={i}
+              style={{ height: `${7 + (i % 4) * 4}px`, animationDelay: `${i * 0.11}s` }}
+            />
+          ))}
+        </span>
+      )}
+      {variant === 'scan' && (
+        <>
+          <span className="fx-scan" />
+          <span className="fx-reticle"><i /><b /></span>
+        </>
+      )}
+      {variant === 'terminal' && (
+        <>
+          <span className="fx-scan" />
+          <span className="fx-term">
+            <span><b>&gt;</b> build addon</span>
+            <span className="dim">soundevents_addon.vsndevts</span>
+            <span><em>compiling</em><i className="caret" /></span>
+          </span>
+        </>
+      )}
+      {variant === 'grid' && <span className="fx-grid" />}
+    </span>
+  );
+}
+
 export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
   const root = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement | null>(null);
@@ -254,10 +304,43 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
           <div className="journal-track">
             {(() => {
               const looped = visiblePosts.length >= 4 ? [...visiblePosts, ...visiblePosts] : visiblePosts;
-              return looped.map((post, index) => <article className="journal-card" key={post.slug + '-' + index} aria-hidden={index >= visiblePosts.length ? true : undefined} tabIndex={index >= visiblePosts.length ? -1 : undefined}>
-                <Link className="post-cover" href={'/posts/' + post.slug}><img src={post.cover} alt="" loading="lazy"/><span className="post-number">0{(index % visiblePosts.length) + 1}</span><span className="post-open"><ArrowUpRight size={20}/></span><span className="post-image-label">{index % visiblePosts.length === 0 ? 'A NEW BEGINNING' : index % visiblePosts.length === 1 ? 'SOMEWHERE TO STAY' : 'SMALL, BEAUTIFUL THINGS'}</span></Link>
-                <div className="post-content"><div className="post-meta"><span>{post.tags[0] || '随笔'}</span><time dateTime={post.date}>{formatDate(post.date)}</time>{post.sample && <em>示例文章</em>}</div><h3><Link href={'/posts/' + post.slug}>{post.title}</Link></h3><p>{post.description}</p><div className="post-bottom"><span>{post.readingMinutes} 分钟阅读</span><Link href={'/posts/' + post.slug} aria-label={'阅读' + post.title}>阅读全文 <ArrowRight size={14}/></Link></div></div>
-              </article>);
+              return looped.map((post, index) => {
+                const fx = coverFxFor(post);
+                const label = index % visiblePosts.length === 0 ? 'A NEW BEGINNING' : index % visiblePosts.length === 1 ? 'SOMEWHERE TO STAY' : 'SMALL, BEAUTIFUL THINGS';
+                return (
+                  <article
+                    className={`journal-card sig-${fx}`}
+                    key={post.slug + '-' + index}
+                    aria-hidden={index >= visiblePosts.length ? true : undefined}
+                    tabIndex={index >= visiblePosts.length ? -1 : undefined}
+                  >
+                    <Link className="post-cover" href={'/posts/' + post.slug}>
+                      <img src={post.cover} alt="" loading="lazy" />
+                      <CoverFxLayer variant={fx} />
+                      <span className="post-number">0{(index % visiblePosts.length) + 1}</span>
+                      <span className="post-open"><ArrowUpRight size={20} /></span>
+                      <span className="post-image-label">{label}</span>
+                    </Link>
+                    <div className="post-content">
+                      <div className="post-meta">
+                        <span>{post.tags[0] || '随笔'}</span>
+                        <time dateTime={post.date}>{formatDate(post.date)}</time>
+                        {post.sample && <em>示例文章</em>}
+                      </div>
+                      <h3>
+                        <Link href={'/posts/' + post.slug}>
+                          <span className="title-text">{post.title}</span>
+                        </Link>
+                      </h3>
+                      <p>{post.description}</p>
+                      <div className="post-bottom">
+                        <span>{post.readingMinutes} 分钟阅读</span>
+                        <Link href={'/posts/' + post.slug} aria-label={'阅读' + post.title}>阅读全文 <ArrowRight size={14} /></Link>
+                      </div>
+                    </div>
+                  </article>
+                );
+              });
             })()}
           </div>
           {visiblePosts.length === 0 && <p className="empty-message">这个分类还没有文章，新的故事正在路上。</p>}

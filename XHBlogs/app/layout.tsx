@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './cybermot.css';
 import './feature-workspace.css';
+import './journal-fx.css';
 import { ThemeProvider } from '../components/ThemeProvider';
 import { MusicProvider } from '../components/MusicProvider';
 import SiteShell from '../components/SiteShell';

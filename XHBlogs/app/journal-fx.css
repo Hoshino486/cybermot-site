@@ -16,17 +16,17 @@
 }
 .dark .journal-card { --fx-b: #c9e2e9; }
 
-.journal-card.sig-wave { --fx-a: #67e8f9; --fx-b: #0e7490; }
-.journal-card.sig-scan { --fx-a: #5eead4; --fx-b: #0f766e; }
-.journal-card.sig-terminal { --fx-a: #86efac; --fx-b: #166534; }
-.journal-card.sig-grid { --fx-a: #93c5fd; --fx-b: #1d4ed8; }
-.journal-card.sig-shine { --fx-a: #96cbd7; --fx-b: #3e8092; }
+.sig-wave { --fx-a: #67e8f9; --fx-b: #0e7490; }
+.sig-scan { --fx-a: #5eead4; --fx-b: #0f766e; }
+.sig-terminal { --fx-a: #86efac; --fx-b: #166534; }
+.sig-grid { --fx-a: #93c5fd; --fx-b: #1d4ed8; }
+.sig-shine { --fx-a: #96cbd7; --fx-b: #3e8092; }
 
-.dark .journal-card.sig-wave { --fx-b: #a5f3fc; }
-.dark .journal-card.sig-scan { --fx-b: #99f6e4; }
-.dark .journal-card.sig-terminal { --fx-b: #bbf7d0; }
-.dark .journal-card.sig-grid { --fx-b: #bfdbfe; }
-.dark .journal-card.sig-shine { --fx-b: #c9e2e9; }
+.dark .sig-wave { --fx-b: #a5f3fc; }
+.dark .sig-scan { --fx-b: #99f6e4; }
+.dark .sig-terminal { --fx-b: #bbf7d0; }
+.dark .sig-grid { --fx-b: #bfdbfe; }
+.dark .sig-shine { --fx-b: #c9e2e9; }
 
 /* Cover ------------------------------------------------------------------ */
 .journal-card .post-cover {
@@ -425,4 +425,89 @@
     -webkit-text-fill-color: currentColor;
     background: none;
   }
+}
+
+/* Article detail hero (same signatures, larger surface) ------------------ */
+.post-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.post-hero > img {
+  filter: saturate(.68) contrast(1.02);
+  transition: transform .9s cubic-bezier(.22, 1, .36, 1), filter .9s;
+}
+
+.post-hero:hover > img {
+  transform: scale(1.045);
+  filter: saturate(.9) contrast(1.04) brightness(1.04);
+}
+
+.post-hero::before {
+  content: "";
+  position: absolute;
+  inset: -30% -10%;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(
+    104deg,
+    transparent 35%,
+    rgba(255, 255, 255, .02) 44%,
+    rgba(255, 255, 255, .18) 49%,
+    rgba(255, 255, 255, .04) 54%,
+    transparent 64%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: fxSheen 11s ease-in-out infinite;
+}
+
+.post-hero:hover::before { animation-duration: 4.5s; }
+
+.post-hero .fx-corners { inset: 16px; }
+.post-hero .fx-eq {
+  right: 24px;
+  bottom: 22px;
+  transform: scale(1.15);
+  transform-origin: bottom right;
+}
+.post-hero .fx-reticle {
+  right: 24px;
+  bottom: 22px;
+  width: 54px;
+  height: 54px;
+}
+.post-hero .fx-term {
+  right: 20px;
+  bottom: 20px;
+  width: 210px;
+  font-size: 8px;
+}
+.post-hero .fx-scan { height: 1px; }
+
+.motion-off .post-hero::before,
+.motion-off .post-hero .fx-eq i,
+.motion-off .post-hero .fx-scan,
+.motion-off .post-hero .fx-reticle,
+.motion-off .post-hero .fx-reticle b,
+.motion-off .post-hero .fx-term .caret,
+.motion-off .post-hero .fx-grid {
+  animation: none !important;
+}
+.motion-off .post-hero::before,
+.motion-off .post-hero .fx-scan { opacity: 0 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .post-hero::before,
+  .post-hero .fx-eq i,
+  .post-hero .fx-scan,
+  .post-hero .fx-reticle,
+  .post-hero .fx-reticle b,
+  .post-hero .fx-term .caret,
+  .post-hero .fx-grid {
+    animation: none !important;
+  }
+  .post-hero::before,
+  .post-hero .fx-scan { opacity: 0 !important; }
 }

@@ -7,6 +7,7 @@ import CyberGrid from './CyberGrid';
 import BilibiliSection from './BilibiliSection';
 import SteamSection from './SteamSection';
 import { useSitePreferences } from './SitePreferencesProvider';
+import { CoverFxLayer, coverFxFor } from './CoverFxLayer';
 import { openMusicPlayer } from './NeteasePlayer';
 import { siteConfig } from '../siteConfig';
 import type { PostSummary } from '../lib/posts';
@@ -19,56 +20,6 @@ const destinations = [
   { title: '灵境漫游', subtitle: '在交互里，发现好奇', href: '/tree', icon: Orbit, number: '04' },
 ];
 const formatDate = (date: string) => date ? date.slice(0, 10).replaceAll('-', '.') : '';
-
-type CoverFx = 'wave' | 'scan' | 'terminal' | 'grid' | 'shine';
-
-// 按文章内容挑一个封面动态签名：音频是频谱，ZE 是准星扫描，服务器是终端，工具是网格。
-function coverFxFor(post: PostSummary): CoverFx {
-  const slug = post.slug.toLowerCase();
-  const tags = post.tags.join(' ');
-  if (slug.includes('soundevent') || tags.includes('音频')) return 'wave';
-  if (slug.includes('ze-practice')) return 'scan';
-  if (slug.includes('local-ze-server')) return 'terminal';
-  if (slug.includes('bomberstudio')) return 'grid';
-  if (tags.includes('CS2')) return 'scan';
-  if (tags.includes('工具')) return 'grid';
-  return 'shine';
-}
-
-function CoverFxLayer({ variant }: { variant: CoverFx }) {
-  return (
-    <span className="cover-fx" data-fx={variant} aria-hidden="true">
-      <span className="fx-corners" />
-      {variant === 'wave' && (
-        <span className="fx-eq">
-          {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-            <i
-              key={i}
-              style={{ height: `${7 + (i % 4) * 4}px`, animationDelay: `${i * 0.11}s` }}
-            />
-          ))}
-        </span>
-      )}
-      {variant === 'scan' && (
-        <>
-          <span className="fx-scan" />
-          <span className="fx-reticle"><i /><b /></span>
-        </>
-      )}
-      {variant === 'terminal' && (
-        <>
-          <span className="fx-scan" />
-          <span className="fx-term">
-            <span><b>&gt;</b> build addon</span>
-            <span className="dim">soundevents_addon.vsndevts</span>
-            <span><em>compiling</em><i className="caret" /></span>
-          </span>
-        </>
-      )}
-      {variant === 'grid' && <span className="fx-grid" />}
-    </span>
-  );
-}
 
 export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
   const root = useRef<HTMLDivElement>(null);
@@ -145,17 +96,17 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     rail.scrollLeft = 0;
 
     const loopWidth = () => rail.scrollWidth / 2;
+    let position = 0;
     const wrap = () => {
       const half = loopWidth();
       if (half <= 0) return;
-      if (rail.scrollLeft >= half) rail.scrollLeft -= half;
-      else if (rail.scrollLeft < 0) rail.scrollLeft += half;
+      if (position >= half) position -= half;
+      else if (position < 0) position += half;
     };
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const SPEED = 18; // 每秒推进的像素，想快就调大
     let frame = 0;
-    let hovered = false;
     let pressed = false;
     let dragging = false;
     let moved = 0;
@@ -166,15 +117,14 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
     const step = (now: number) => {
       const delta = last ? Math.min(now - last, 64) : 16;
       last = now;
-      if (!reduce && !hovered && !pressed && !dragging) {
-        rail.scrollLeft += (SPEED * delta) / 1000;
+      if (!reduce && !rail.matches(':hover') && !pressed && !dragging) {
+        position += (SPEED * delta) / 1000;
         wrap();
+        rail.scrollLeft = position;
       }
       frame = requestAnimationFrame(step);
     };
 
-    const onPointerEnter = (event: PointerEvent) => { if (event.pointerType === 'mouse') hovered = true; };
-    const onPointerLeave = () => { hovered = false; };
     // 按下时先不抢指针：抢早了 click 会落在轨道上，链接收不到
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -183,6 +133,7 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
       moved = 0;
       startX = event.clientX;
       startScroll = rail.scrollLeft;
+      position = startScroll;
     };
     const onPointerMove = (event: PointerEvent) => {
       if (!pressed) return;
@@ -194,11 +145,13 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
         try { rail.setPointerCapture(event.pointerId); } catch {}
       }
       moved = Math.max(moved, Math.abs(delta));
-      rail.scrollLeft = startScroll - delta;
+      position = startScroll - delta;
       wrap();
+      rail.scrollLeft = position;
     };
     const onPointerUp = (event: PointerEvent) => {
       pressed = false;
+      position = rail.scrollLeft;
       if (!dragging) return;
       dragging = false;
       rail.classList.remove('is-dragging');
@@ -212,8 +165,6 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
       rail.classList.remove('is-dragging');
     };
 
-    rail.addEventListener('pointerenter', onPointerEnter);
-    rail.addEventListener('pointerleave', onPointerLeave);
     rail.addEventListener('pointerdown', onPointerDown);
     rail.addEventListener('pointermove', onPointerMove);
     rail.addEventListener('pointerup', onPointerUp);
@@ -223,8 +174,6 @@ export default function HomeExperience({ posts }: { posts: PostSummary[] }) {
 
     return () => {
       cancelAnimationFrame(frame);
-      rail.removeEventListener('pointerenter', onPointerEnter);
-      rail.removeEventListener('pointerleave', onPointerLeave);
       rail.removeEventListener('pointerdown', onPointerDown);
       rail.removeEventListener('pointermove', onPointerMove);
       rail.removeEventListener('pointerup', onPointerUp);

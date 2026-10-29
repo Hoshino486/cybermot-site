@@ -211,3 +211,7 @@ html.dark{--day-glow-scale:.62}
     mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%)}
 }
 @media(prefers-reduced-motion:reduce){.journal-grid.is-marquee{cursor:auto}}
+/* ---- 工坊卡片：作者/参与 + 分类标签并排 ---- */
+.steam-workshop-badges{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;max-width:calc(100% - 20px);z-index:2}
+.steam-workshop-badges em{position:static;left:auto;top:auto;font-style:normal}
+.steam-workshop-tag{font-style:normal;font-size:7px;font-weight:700;letter-spacing:1px;padding:2px 6px;color:#04222c;background:#7fe3ff;border:1px solid transparent;white-space:nowrap}

@@ -81,7 +81,10 @@ export default function SteamSection() {
               <a key={item.id} className="steam-workshop-item" href={item.url} target="_blank" rel="noopener noreferrer">
                 <span className="steam-workshop-cover">
                   <img src={item.cover} alt={item.title} loading="lazy" />
-                  <em className={item.role === 'author' ? 'is-author' : ''}>{item.role === 'author' ? '作者' : '参与'}</em>
+                  <span className="steam-workshop-badges">
+                    <em className={item.role === 'author' ? 'is-author' : ''}>{item.role === 'author' ? '作者' : '参与'}</em>
+                    {item.tag && <span className="steam-workshop-tag">{item.tag}</span>}
+                  </span>
                 </span>
                 <b>{item.title}</b>
                 <span className="steam-workshop-meta">{hours(item.subs)} 订阅 · {hours(item.views)} 访客</span>

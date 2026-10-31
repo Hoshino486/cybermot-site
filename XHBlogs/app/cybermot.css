@@ -285,3 +285,35 @@ html.dark{--day-glow-scale:.62}
 .news-cluster li a{color:var(--cm-ink);text-decoration:none;opacity:.85}
 .news-cluster li a:hover{color:var(--cm-accent);opacity:1}
 .news-cluster li span{flex-shrink:0;font:10px var(--font-geist-mono);color:var(--cm-muted)}
+/* ---- 新闻：左侧栏 + 按日期分组（对齐 AIHOT 的信息结构） ---- */
+.news-page{display:grid;grid-template-columns:186px minmax(0,1fr);gap:38px;align-items:start;width:min(1320px,93%);margin:0 auto;padding:120px 0 80px}
+.news-side{position:sticky;top:104px;display:flex;flex-direction:column;gap:2px;font-size:13px}
+.news-side-title{margin:16px 0 6px;font:9px var(--font-geist-mono);letter-spacing:2px;text-transform:uppercase;color:var(--cm-muted);opacity:.7}
+.news-side-title:first-child{margin-top:0}
+.news-side button{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:var(--cm-muted);font-size:13px;text-align:left;cursor:pointer;transition:color .2s,background .2s}
+.news-side button svg{opacity:.75}
+.news-side button em{margin-left:auto;font:10px var(--font-geist-mono);font-style:normal;opacity:.55}
+.news-side button:hover{color:var(--cm-ink);background:color-mix(in srgb,var(--cm-ink) 6%,transparent)}
+.news-side button.is-active{color:var(--cm-ink);background:color-mix(in srgb,var(--cm-accent) 16%,transparent);font-weight:600}
+.news-side button.is-active svg{opacity:1;color:var(--cm-accent)}
+.news-side-note{margin:4px 10px 0;font-size:11px;line-height:1.8;color:var(--cm-muted);opacity:.75}
+.news-main{min-width:0}
+.news-day{margin-bottom:26px}
+.news-day-head{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--cm-line)}
+.news-day-head b{font-size:15px;letter-spacing:.5px;color:var(--cm-ink)}
+.news-day-head span{font:10px var(--font-geist-mono);color:var(--cm-muted)}
+.news-card-top time{font:10px var(--font-geist-mono);color:var(--cm-muted);letter-spacing:.5px}
+.news-hotlist{list-style:none;margin:0;padding:0;border:1px solid var(--cm-line);background:var(--cm-glass);border-radius:12px;overflow:hidden}
+.news-hotlist li+li{border-top:1px solid var(--cm-line)}
+.news-hotlist a{display:flex;gap:14px;padding:16px 18px;text-decoration:none;transition:background .2s}
+.news-hotlist a:hover{background:color-mix(in srgb,var(--cm-accent) 7%,transparent)}
+.news-hotlist-body{display:flex;flex-direction:column;gap:5px;min-width:0}
+.news-hotlist-body b{font-size:14px;font-weight:600;line-height:1.5;color:var(--cm-ink)}
+.news-hotlist-body span{font:10px var(--font-geist-mono);color:var(--cm-muted)}
+@media(max-width:980px){
+  .news-page{grid-template-columns:1fr;gap:18px}
+  .news-side{position:static;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px}
+  .news-side-title{margin:0 6px 0 0}
+  .news-side button{width:auto;padding:6px 10px;border:1px solid var(--cm-line)}
+  .news-side-note{display:none}
+}

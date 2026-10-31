@@ -47,7 +47,7 @@ export default function ToolsBoard() {
             className="h-full"
           >
             <a
-              href={`${tool.href}/`}
+              href={tool.href.startsWith('http') ? tool.href : `${tool.href}/`}
               target="_blank"
               rel="noopener noreferrer"
               className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-emerald-500/20 bg-white/60 p-6 shadow-xl backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-emerald-500/20 md:p-8 dark:bg-slate-800/50"

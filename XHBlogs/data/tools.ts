@@ -20,4 +20,14 @@ export const toolsData: Tool[] = [
     tags: ["CS2", "Source 2", "KV3", "批量生成"],
     status: "在线",
   },
+  {
+    id: "fastdl-ozlin",
+    name: "Ozlin Info FastDL",
+    description:
+      "CS1.6 / CS:GO / CS2 的公共 FastDL 站，自定义地图、模型和材质按游戏目录归档。碰到 missing map、bsp differ 或者模型材质紫黑时，先来这儿找对应文件。",
+    icon: "🗂️",
+    href: "https://fastdl.ozlin.info/",
+    tags: ["CS2", "CS:GO", "FastDL", "资源下载"],
+    status: "外链",
+  },
 ];

@@ -54,7 +54,7 @@ export function entitiesOf(title: string): Set<string> {
   return found;
 }
 
-const CHANNEL_WEIGHT: Record<FeedItem['channel'], number> = { aihot: 4, zh: 3, world: 2, finance: 2, tech: 1 };
+const CHANNEL_WEIGHT: Record<FeedItem['channel'], number> = { aihot: 4, zh: 3, world: 2, finance: 2, china: 2, gdelt: 2, tech: 1 };
 
 /** 把同一件事的多家报道合成一条，主条目优先取整理过的中文摘要。 */
 export function clusterItems(items: FeedItem[], threshold = 0.4): Cluster[] {

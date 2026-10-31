@@ -10,6 +10,7 @@ const BEATS: { key: Beat | 'all'; label: string }[] = [
   { key: 'ai', label: 'AI' },
   { key: 'tech', label: '科技' },
   { key: 'politics', label: '国际' },
+  { key: 'china', label: '国内' },
   { key: 'finance', label: '财经' },
   { key: 'community', label: '社区' },
 ];
@@ -18,6 +19,7 @@ const BEAT_LABEL: Record<Beat, string> = {
   ai: 'AI',
   tech: '科技',
   politics: '国际',
+  china: '国内',
   finance: '财经',
   community: '社区',
 };
@@ -104,7 +106,12 @@ export default function NewsBoard({
   const base = useMemo(() => {
     if (beat !== 'all') return clusters.filter((cluster) => cluster.primary.beat === beat);
     if (view === 'selected') {
-      return clusters.filter(({ primary }) => primary.beat === 'politics' || primary.beat === 'finance' || primary.beat === 'ai');
+            // 精选只收已经筛过的：AIHOT、国际、财经，以及人民网/新华网这类全国性官媒
+      return clusters.filter(({ primary }) => {
+        if (primary.beat === 'ai' || primary.beat === 'politics' || primary.beat === 'finance') return true;
+        if (primary.beat === 'china') return /人民网|新华网/.test(primary.source);
+        return false;
+      });
     }
     return clusters;
   }, [clusters, view, beat]);
@@ -159,7 +166,7 @@ export default function NewsBoard({
 
         <div className="news-side-title">关于</div>
         <p className="news-side-note">
-          四类信源自动汇总：AIHOT 的精选与热点、国际通讯社 RSS、财经媒体，以及 HN / 少数派 / V2EX。
+          信源分五路：AIHOT、国际通讯社 RSS、国内官媒、财经媒体，以及 HN / 少数派 / V2EX；GDELT 单独按 10 分钟抓取。
         </p>
       </aside>
 
@@ -319,7 +326,7 @@ export default function NewsBoard({
             BBC · The Guardian · Al Jazeera · NYT · DW · France 24 · NPR ·
             <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer"> Hacker News</a> ·
             <a href="https://sspai.com" target="_blank" rel="noopener noreferrer"> 少数派</a> ·
-            <a href="https://www.v2ex.com" target="_blank" rel="noopener noreferrer"> V2EX</a> · 华尔街见闻
+            <a href="https://www.v2ex.com" target="_blank" rel="noopener noreferrer"> V2EX</a> · 华尔街见闻 · 人民网 · 新华网 · 中新网 · 澎湃 · GDELT
             ，每 2 分钟同步；标题与摘要版权归各原始来源。
           </span>
         </footer>

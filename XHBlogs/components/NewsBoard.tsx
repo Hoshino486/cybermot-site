@@ -166,7 +166,7 @@ export default function NewsBoard({
 
         <div className="news-side-title">关于</div>
         <p className="news-side-note">
-          信源分五路：AIHOT、国际通讯社 RSS、国内官媒、财经媒体，以及 HN / 少数派 / V2EX；GDELT 单独按 10 分钟抓取。
+          信源分五路：AIHOT、国际通讯社 RSS、国内官媒、财经媒体，以及 HN / 少数派 / V2EX；Google News 与 GDELT 走单独的 10 分钟管线。
         </p>
       </aside>
 

@@ -1,6 +1,6 @@
 import { parseFeed } from './rss';
 
-export type Channel = 'aihot' | 'tech' | 'zh' | 'world' | 'finance' | 'china' | 'gdelt';
+export type Channel = 'aihot' | 'tech' | 'zh' | 'world' | 'finance' | 'china' | 'global';
 
 export type Beat = 'ai' | 'tech' | 'politics' | 'china' | 'finance' | 'community';
 
@@ -206,13 +206,13 @@ export type NewsBundle = { items: FeedItem[]; hot: HotTopic[] };
 
 /** 合并全部信源，任一路挂掉都不影响其他来源。 */
 export async function fetchAllNews(): Promise<NewsBundle> {
-  const [aihot, hn, sspai, v2ex, feeds, gdelt] = await Promise.allSettled([
+  const [aihot, hn, sspai, v2ex, feeds, world] = await Promise.allSettled([
     fetchAihot(),
     fetchHackerNews(),
     fetchSspai(),
     fetchV2ex(),
     fetchFeeds(),
-    fetchGdelt(),
+    fetchWorldWide(),
   ]);
 
   const ai = aihot.status === 'fulfilled' ? aihot.value : { items: [] as FeedItem[], hot: [] as HotTopic[] };
@@ -221,7 +221,7 @@ export async function fetchAllNews(): Promise<NewsBundle> {
     ...(sspai.status === 'fulfilled' ? sspai.value : []),
     ...(v2ex.status === 'fulfilled' ? v2ex.value : []),
     ...(feeds.status === 'fulfilled' ? feeds.value : []),
-    ...(gdelt.status === 'fulfilled' ? gdelt.value : []),
+    ...(world.status === 'fulfilled' ? world.value : []),
   ];
 
   const seen = new Set<string>();
@@ -241,18 +241,18 @@ export async function fetchAllNews(): Promise<NewsBundle> {
   return { items, hot: ai.hot };
 }
 
-type GdeltItem = { title: string; url: string; source: string; beat: string; publishedAt?: string };
+type WorldItem = { title: string; url: string; source: string; beat: string; publishedAt?: string };
 
 /**
- * GDELT 单独抓取：走站内 /api/gdelt，那个路由自己按 10 分钟缓存，
+ * 全球要闻单独抓取：走站内 /api/world，那个路由自己按 10 分钟缓存，
  * 和新闻页的 2 分钟节奏分开；连不通就静默跳过，不影响其它信源。
  */
-export async function fetchGdelt(): Promise<FeedItem[]> {
+export async function fetchWorldWide(): Promise<FeedItem[]> {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://cybermot.bomber.asia';
-  const body = await json<{ items?: GdeltItem[] }>(`${base}/api/gdelt`, 25000);
+  const body = await json<{ items?: WorldItem[] }>(`${base}/api/world`, 25000);
   return (body?.items ?? []).map((item, index) => ({
-    id: `gdelt-${index}-${item.url.slice(-20)}`,
-    channel: 'gdelt' as const,
+    id: `world-${index}-${item.url.slice(-20)}`,
+    channel: 'global' as const,
     beat: (item.beat === 'finance' ? 'finance' : item.beat === 'tech' ? 'tech' : 'politics') as Beat,
     source: item.source,
     title: item.title,

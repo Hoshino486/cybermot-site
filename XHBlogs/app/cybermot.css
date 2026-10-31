@@ -319,4 +319,4 @@ html.dark{--day-glow-scale:.62}
 }
 /* ---- 新闻：国内 / GDELT 频道配色 ---- */
 .news-chip.is-china{background:#ff9d9d;color:#2b0505}
-.news-chip.is-gdelt{background:#8fd0ff;color:#04222e}
+.news-chip.is-global{background:#8fd0ff;color:#04222e}

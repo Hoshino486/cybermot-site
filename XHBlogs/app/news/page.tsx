@@ -1,31 +1,16 @@
 import Navbar from '../../components/Navbar';
 import PageTransition from '../../components/PageTransition';
-import NewsBoard, { type HotTopic, type NewsItem } from '../../components/NewsBoard';
+import NewsBoard from '../../components/NewsBoard';
+import { fetchAllNews } from '../../lib/news';
 import { siteConfig } from '../../siteConfig';
 
 export const metadata = {
   title: '新闻 | ' + siteConfig.title,
-  description: '实时聚合的 AI 与全行业热点：模型、产品、行业、论文、教程与观点。',
+  description: '实时聚合的 AI 与全行业热点：模型、产品、行业、论文、教程、科技与中文社区。',
 };
 
-// 两分钟重新取一次，页面本身是静态生成的，取数在边缘完成
+// 两分钟重新取一次；页面走 ISR，过期后由边缘重新生成
 export const revalidate = 120;
-
-const API = 'https://aihot.news/api/v1';
-
-async function grab<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetch(url, {
-      next: { revalidate: 120 },
-      signal: AbortSignal.timeout(9000),
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
-}
 
 function stamp(): string {
   return new Intl.DateTimeFormat('zh-CN', {
@@ -39,19 +24,13 @@ function stamp(): string {
 }
 
 export default async function NewsPage() {
-  const [hot, feed] = await Promise.all([
-    grab<{ items: HotTopic[] }>(`${API}/hot-topics`),
-    grab<{ items: NewsItem[] }>(`${API}/items?limit=60&window=7d`),
-  ]);
-
-  const hotTopics = hot?.items ?? [];
-  const items = feed?.items ?? [];
+  const { items, hot } = await fetchAllNews();
 
   return (
     <div className="min-h-screen relative pb-20">
       <Navbar />
       <PageTransition>
-        <NewsBoard hotTopics={hotTopics} items={items} updatedAt={stamp()} live={Boolean(feed || hot)} />
+        <NewsBoard hotTopics={hot} items={items} updatedAt={stamp()} live={items.length > 0} />
       </PageTransition>
     </div>
   );

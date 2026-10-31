@@ -1,32 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ArrowUpRight, Flame, RefreshCw, Radio } from 'lucide-react';
-
-export type NewsItem = {
-  id: string;
-  title: string;
-  originalTitle?: string;
-  summary?: string;
-  source?: { name?: string };
-  links?: { aihot?: string; original?: string };
-  publishedAt?: string;
-  discoveredAt?: string;
-  category?: string;
-  score?: number;
-  reason?: string;
-};
-
-export type HotTopic = {
-  rank?: number;
-  id: string;
-  title: string;
-  source?: { name?: string };
-  links?: { aihot?: string; original?: string };
-  sourceCount?: number;
-  signalCount?: number;
-  latestAt?: string;
-};
+import { ArrowUpRight, ChevronDown, Flame, Radio, RefreshCw } from 'lucide-react';
+import type { FeedItem, HotTopic } from '../lib/news';
+import { clusterItems, relatedMap } from '../lib/news-cluster';
 
 const TABS: { key: string; label: string }[] = [
   { key: 'all', label: '全部' },
@@ -36,9 +13,24 @@ const TABS: { key: string; label: string }[] = [
   { key: 'paper', label: '论文' },
   { key: 'tip', label: '教程' },
   { key: 'opinion', label: '观点' },
+  { key: 'tech', label: '科技' },
+  { key: 'zh', label: '中文' },
 ];
 
-const LABEL: Record<string, string> = Object.fromEntries(TABS.map((tab) => [tab.key, tab.label]));
+const LABEL: Record<string, string> = {
+  'ai-models': '模型',
+  'ai-products': '产品',
+  industry: '行业',
+  paper: '论文',
+  tip: '教程',
+  opinion: '观点',
+};
+
+const CHANNEL_LABEL: Record<FeedItem['channel'], string> = {
+  aihot: 'AI',
+  tech: 'TECH',
+  zh: '中文',
+};
 
 function timeAgo(value?: string): string {
   if (!value) return '';
@@ -52,6 +44,13 @@ function timeAgo(value?: string): string {
   return `${Math.round(hours / 24)} 天前`;
 }
 
+function matchesTab(item: FeedItem, tab: string): boolean {
+  if (tab === 'all') return true;
+  if (tab === 'tech' || tab === 'zh') return item.channel === tab;
+  if (item.channel !== 'aihot') return false;
+  return (item.category || 'industry') === tab;
+}
+
 export default function NewsBoard({
   hotTopics,
   items,
@@ -59,25 +58,33 @@ export default function NewsBoard({
   live,
 }: {
   hotTopics: HotTopic[];
-  items: NewsItem[];
+  items: FeedItem[];
   updatedAt: string;
   live: boolean;
 }) {
   const [tab, setTab] = useState('all');
+  const [open, setOpen] = useState<string | null>(null);
+
+  const clusters = useMemo(() => clusterItems(items), [items]);
+  const related = useMemo(() => relatedMap(items), [items]);
 
   const counts = useMemo(() => {
-    const map: Record<string, number> = { all: items.length };
-    for (const item of items) {
-      const key = item.category || 'industry';
-      map[key] = (map[key] ?? 0) + 1;
+    const map: Record<string, number> = {};
+    for (const cluster of clusters) {
+      for (const entry of TABS) {
+        if (matchesTab(cluster.primary, entry.key)) map[entry.key] = (map[entry.key] ?? 0) + 1;
+      }
     }
     return map;
-  }, [items]);
+  }, [clusters]);
 
   const visible = useMemo(
-    () => (tab === 'all' ? items : items.filter((item) => (item.category || 'industry') === tab)),
-    [items, tab],
+    () => clusters.filter((cluster) => matchesTab(cluster.primary, tab)),
+    [clusters, tab],
   );
+
+  const merged = clusters.filter((cluster) => cluster.others.length > 0).length;
+  const relatedCount = clusters.filter((cluster) => (related.get(cluster.primary.id) ?? []).length > 0).length;
 
   return (
     <main className="news-page">
@@ -95,7 +102,10 @@ export default function NewsBoard({
             <span>{updatedAt} 更新</span>
           </div>
         </div>
-        <p className="news-sub">AI 为主，兼顾模型、产品、行业、论文与观点；同一件事只留一条，按热度排在前面。</p>
+        <p className="news-sub">
+          AI 为主，也收科技与中文社区；四处信源每 2 分钟同步一次，同一件事只留一条，同主体的其它报道折在卡片里。
+          <em className="news-merged">同题合并 {merged} 组 · 同主题关联 {relatedCount} 条</em>
+        </p>
       </header>
 
       <div className="news-rail">
@@ -138,33 +148,89 @@ export default function NewsBoard({
           </div>
 
           <div className="news-list">
-            {visible.map((item) => (
-              <article className="news-card" key={item.id}>
-                <div className="news-card-top">
-                  <span className="news-chip">{LABEL[item.category || 'industry'] ?? '行业'}</span>
-                  <span className="news-source">{item.source?.name || '未知来源'}</span>
-                  <time dateTime={item.publishedAt}>{timeAgo(item.publishedAt)}</time>
-                </div>
-                <h2>
-                  <a href={item.links?.original || item.links?.aihot || '#'} target="_blank" rel="noopener noreferrer">
-                    {item.title}
-                  </a>
-                </h2>
-                {item.summary && <p>{item.summary}</p>}
-                <div className="news-card-foot">
-                  {item.links?.aihot && (
-                    <a href={item.links.aihot} target="_blank" rel="noopener noreferrer">
-                      AIHOT 条目 <ArrowUpRight size={13} />
+            {visible.map((cluster) => {
+              const item = cluster.primary;
+              const extra = cluster.others;
+              const opened = open === cluster.id;
+              return (
+                <article className="news-card" key={cluster.id}>
+                  <div className="news-card-top">
+                    <span className={`news-chip is-${item.channel}`}>
+                      {item.channel === 'aihot' ? LABEL[item.category || 'industry'] ?? '行业' : CHANNEL_LABEL[item.channel]}
+                    </span>
+                    <span className="news-source">{item.source}</span>
+                    <time dateTime={item.publishedAt}>{timeAgo(item.publishedAt)}</time>
+                    {extra.length > 0 && <span className="news-cluster-count">+{extra.length} 家</span>}
+                  </div>
+                  <h2>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      {item.title}
                     </a>
+                  </h2>
+                  {item.summary && <p>{item.summary}</p>}
+
+                  {extra.length > 0 && (
+                    <div className="news-cluster">
+                      <button type="button" onClick={() => setOpen(opened ? null : cluster.id)} aria-expanded={opened}>
+                        另有 {extra.length} 条同题报道
+                        <ChevronDown size={13} className={opened ? 'is-open' : ''} />
+                      </button>
+                      {opened && (
+                        <ul>
+                          {extra.map((other) => (
+                            <li key={other.id}>
+                              <a href={other.url} target="_blank" rel="noopener noreferrer">
+                                {other.title}
+                              </a>
+                              <span>{other.source}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
-                  {item.links?.original && (
-                    <a href={item.links.original} target="_blank" rel="noopener noreferrer">
-                      原文 <ArrowUpRight size={13} />
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))}
+
+                  {(() => {
+                    const peers = related.get(item.id) ?? [];
+                    if (peers.length === 0) return null;
+                    const key = `related-${cluster.id}`;
+                    const opened = open === key;
+                    return (
+                      <div className="news-cluster news-related">
+                        <button type="button" onClick={() => setOpen(opened ? null : key)} aria-expanded={opened}>
+                          同主题还有 {peers.length} 条
+                          <ChevronDown size={13} className={opened ? 'is-open' : ''} />
+                        </button>
+                        {opened && (
+                          <ul>
+                            {peers.map((peer) => (
+                              <li key={peer.id}>
+                                <a href={peer.url} target="_blank" rel="noopener noreferrer">
+                                  {peer.title}
+                                </a>
+                                <span>{peer.source}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  <div className="news-card-foot">
+                    {item.extra && (
+                      <a href={item.extra.url} target="_blank" rel="noopener noreferrer">
+                        {item.extra.label} <ArrowUpRight size={13} />
+                      </a>
+                    )}
+                    {item.channel === 'aihot' && item.url !== item.extra?.url && (
+                      <a href={item.url} target="_blank" rel="noopener noreferrer">
+                        原文 <ArrowUpRight size={13} />
+                      </a>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
             {visible.length === 0 && <p className="news-empty">这个分类暂时没有内容。</p>}
           </div>
         </section>
@@ -173,8 +239,11 @@ export default function NewsBoard({
       <footer className="news-credit">
         <Radio size={13} />
         <span>
-          数据来自 <a href="https://aihot.news" target="_blank" rel="noopener noreferrer">AIHOT</a>
-          ，每 2 分钟同步一次；标题与摘要由对方整理，版权归各原始来源。
+          信源：<a href="https://aihot.news" target="_blank" rel="noopener noreferrer">AIHOT</a> ·
+          <a href="https://news.ycombinator.com" target="_blank" rel="noopener noreferrer"> Hacker News</a> ·
+          <a href="https://sspai.com" target="_blank" rel="noopener noreferrer"> 少数派</a> ·
+          <a href="https://www.v2ex.com" target="_blank" rel="noopener noreferrer"> V2EX</a>
+          ，每 2 分钟同步；标题与摘要版权归各原始来源。
         </span>
       </footer>
     </main>

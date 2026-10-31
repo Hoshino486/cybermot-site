@@ -1,4 +1,5 @@
 import { parseFeed } from './rss';
+import { fetchWorldItems } from './world';
 
 export type Channel = 'aihot' | 'tech' | 'zh' | 'world' | 'finance' | 'china' | 'global';
 
@@ -63,24 +64,24 @@ async function xml(url: string, timeout = 9000): Promise<string | null> {
   }
 }
 
-/** 国际与财经：公开 RSS，无需密钥。 */
+/** 国际、财经与国内：公开 RSS，无需密钥。 */
 const FEEDS: { name: string; url: string; beat: Beat; limit: number; lang: 'en' | 'zh' }[] = [
-  { name: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', beat: 'politics', limit: 7, lang: 'en' },
-  { name: 'The Guardian', url: 'https://www.theguardian.com/world/rss', beat: 'politics', limit: 6, lang: 'en' },
-  { name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml', beat: 'politics', limit: 5, lang: 'en' },
-  { name: 'NYT World', url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', beat: 'politics', limit: 5, lang: 'en' },
-  { name: 'DW', url: 'https://rss.dw.com/rdf/rss-en-world', beat: 'politics', limit: 4, lang: 'en' },
-  { name: 'France 24', url: 'https://www.france24.com/en/rss', beat: 'politics', limit: 4, lang: 'en' },
+  { name: 'BBC World', url: 'https://feeds.bbci.co.uk/news/world/rss.xml', beat: 'politics', limit: 6, lang: 'en' },
+  { name: 'The Guardian', url: 'https://www.theguardian.com/world/rss', beat: 'politics', limit: 5, lang: 'en' },
+  { name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml', beat: 'politics', limit: 4, lang: 'en' },
+  { name: 'NYT World', url: 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml', beat: 'politics', limit: 4, lang: 'en' },
+  { name: 'DW', url: 'https://rss.dw.com/rdf/rss-en-world', beat: 'politics', limit: 3, lang: 'en' },
+  { name: 'France 24', url: 'https://www.france24.com/en/rss', beat: 'politics', limit: 3, lang: 'en' },
   { name: 'NPR World', url: 'https://feeds.npr.org/1004/rss.xml', beat: 'politics', limit: 3, lang: 'en' },
-  { name: 'BBC Business', url: 'https://feeds.bbci.co.uk/news/business/rss.xml', beat: 'finance', limit: 6, lang: 'en' },
-  { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss', beat: 'finance', limit: 5, lang: 'en' },
-  { name: '华尔街见闻', url: 'https://dedicated.wallstreetcn.com/rss.xml', beat: 'finance', limit: 6, lang: 'zh' },
-  { name: '人民网·时政', url: 'http://www.people.com.cn/rss/politics.xml', beat: 'china', limit: 6, lang: 'zh' },
-  { name: '人民网·国际', url: 'http://www.people.com.cn/rss/world.xml', beat: 'politics', limit: 5, lang: 'zh' },
-  { name: '新华网·时政', url: 'http://www.xinhuanet.com/politics/news_politics.xml', beat: 'china', limit: 5, lang: 'zh' },
-  { name: '中新网', url: 'https://www.chinanews.com.cn/rss/scroll-news.xml', beat: 'china', limit: 5, lang: 'zh' },
-  { name: '中新网·国际', url: 'https://www.chinanews.com.cn/rss/world.xml', beat: 'politics', limit: 4, lang: 'zh' },
-  { name: '澎湃新闻', url: 'https://feedx.net/rss/thepaper.xml', beat: 'china', limit: 4, lang: 'zh' },
+  { name: 'BBC Business', url: 'https://feeds.bbci.co.uk/news/business/rss.xml', beat: 'finance', limit: 5, lang: 'en' },
+  { name: 'Guardian Business', url: 'https://www.theguardian.com/uk/business/rss', beat: 'finance', limit: 4, lang: 'en' },
+  { name: '华尔街见闻', url: 'https://dedicated.wallstreetcn.com/rss.xml', beat: 'finance', limit: 5, lang: 'zh' },
+  { name: '人民网·时政', url: 'http://www.people.com.cn/rss/politics.xml', beat: 'china', limit: 5, lang: 'zh' },
+  { name: '人民网·国际', url: 'http://www.people.com.cn/rss/world.xml', beat: 'politics', limit: 4, lang: 'zh' },
+  { name: '新华网·时政', url: 'http://www.xinhuanet.com/politics/news_politics.xml', beat: 'china', limit: 4, lang: 'zh' },
+  { name: '中新网', url: 'https://www.chinanews.com.cn/rss/scroll-news.xml', beat: 'china', limit: 4, lang: 'zh' },
+  { name: '中新网·国际', url: 'https://www.chinanews.com.cn/rss/world.xml', beat: 'politics', limit: 3, lang: 'zh' },
+  { name: '澎湃新闻', url: 'https://feedx.net/rss/thepaper.xml', beat: 'china', limit: 3, lang: 'zh' },
 ];
 
 async function fetchFeeds(): Promise<FeedItem[]> {
@@ -91,7 +92,7 @@ async function fetchFeeds(): Promise<FeedItem[]> {
     const feed = FEEDS[index];
     return parseFeed(result.value, feed.limit).map((entry, order) => ({
       id: `rss-${feed.name}-${order}-${entry.link.slice(-24)}`,
-      channel: (feed.beat === 'finance' ? 'finance' : 'world') as Channel,
+      channel: (feed.beat === 'finance' ? 'finance' : feed.beat === 'china' ? 'china' : 'world') as Channel,
       beat: feed.beat,
       source: feed.name,
       title: entry.title,
@@ -202,6 +203,21 @@ export async function fetchV2ex(limit = 8): Promise<FeedItem[]> {
     }));
 }
 
+/** 全球要闻：直接调用模块（不绕自己的 HTTP 路由），10 分钟缓存由 lib/world.ts 控制。 */
+export async function fetchWorldWide(): Promise<FeedItem[]> {
+  const items = await fetchWorldItems();
+  return items.map((item, index) => ({
+    id: `world-${index}-${item.url.slice(-20)}`,
+    channel: 'global' as const,
+    beat: (item.beat === 'finance' ? 'finance' : item.beat === 'tech' ? 'tech' : 'politics') as Beat,
+    source: item.source,
+    title: item.title,
+    url: item.url,
+    publishedAt: item.publishedAt,
+    lang: 'en' as const,
+  }));
+}
+
 export type NewsBundle = { items: FeedItem[]; hot: HotTopic[] };
 
 /** 合并全部信源，任一路挂掉都不影响其他来源。 */
@@ -239,25 +255,4 @@ export async function fetchAllNews(): Promise<NewsBundle> {
     });
 
   return { items, hot: ai.hot };
-}
-
-type WorldItem = { title: string; url: string; source: string; beat: string; publishedAt?: string };
-
-/**
- * 全球要闻单独抓取：走站内 /api/world，那个路由自己按 10 分钟缓存，
- * 和新闻页的 2 分钟节奏分开；连不通就静默跳过，不影响其它信源。
- */
-export async function fetchWorldWide(): Promise<FeedItem[]> {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://cybermot.bomber.asia';
-  const body = await json<{ items?: WorldItem[] }>(`${base}/api/world`, 25000);
-  return (body?.items ?? []).map((item, index) => ({
-    id: `world-${index}-${item.url.slice(-20)}`,
-    channel: 'global' as const,
-    beat: (item.beat === 'finance' ? 'finance' : item.beat === 'tech' ? 'tech' : 'politics') as Beat,
-    source: item.source,
-    title: item.title,
-    url: item.url,
-    publishedAt: item.publishedAt,
-    lang: 'en' as const,
-  }));
 }

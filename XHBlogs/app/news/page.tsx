@@ -9,8 +9,8 @@ export const metadata = {
   description: '实时聚合的 AI 与全行业热点：模型、产品、行业、论文、教程、科技与中文社区。',
 };
 
-// 两分钟重新取一次；页面走 ISR，过期后由边缘重新生成
-export const revalidate = 120;
+// 每次请求实时取：静态预渲染的 ISR 在 Worker 上没有按预期刷新
+export const dynamic = 'force-dynamic';
 
 function stamp(): string {
   return new Intl.DateTimeFormat('zh-CN', {

@@ -36,7 +36,7 @@ const UA = 'Mozilla/5.0 (compatible; CyberMotNews/1.0; +https://cybermot.bomber.
 async function json<T>(url: string, timeout = 8000): Promise<T | null> {
   try {
     const res = await fetch(url, {
-      next: { revalidate: 120 },
+      next: { revalidate: 60 },
       signal: AbortSignal.timeout(timeout),
       headers: { accept: 'application/json', 'user-agent': UA },
     });
@@ -50,7 +50,7 @@ async function json<T>(url: string, timeout = 8000): Promise<T | null> {
 async function xml(url: string, timeout = 9000): Promise<string | null> {
   try {
     const res = await fetch(url, {
-      next: { revalidate: 180 },
+      next: { revalidate: 120 },
       signal: AbortSignal.timeout(timeout),
       headers: {
         accept: 'application/rss+xml, application/xml, text/xml, */*',

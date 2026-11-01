@@ -34,7 +34,7 @@ async function googleFeed(feed: (typeof GOOGLE_FEEDS)[number]): Promise<WorldIte
   try {
     const res = await fetch(feed.url, {
       // 这一路按 10 分钟缓存，比新闻页慢一档，请求也不会太频繁
-      next: { revalidate: 600 },
+      next: { revalidate: 300 },
       headers: { 'user-agent': UA, accept: 'application/rss+xml, */*' },
       signal: AbortSignal.timeout(15_000),
     });
@@ -74,7 +74,7 @@ async function gdelt(): Promise<WorldItem[]> {
       encodeURIComponent('theme:POLITICS sourcelang:english') +
       '&mode=artlist&maxrecords=8&format=json&timespan=1d&sort=datedesc';
     const res = await fetch(url, {
-      next: { revalidate: 600 },
+      next: { revalidate: 300 },
       headers: { 'user-agent': UA },
       signal: AbortSignal.timeout(15_000),
     });

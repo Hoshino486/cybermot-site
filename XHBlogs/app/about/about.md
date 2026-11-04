@@ -18,6 +18,11 @@ description: "一个喜欢把游戏拆开看看里面有什么的动画人，做
 
 ## 我在做的事
 
+### 摆回原位 · Sekiro Map Toolkit
+
+只狼的地图导出工具。解包之后，模型、材质、贴图都散着，摆放在 MSB 里 —— 这个工具把四样东西对上，直接生成一个能在 Blender 打开的 `.blend`，物件位置和 DSMapStudio 里一模一样。
+
+起因很直接：模型和动画都导出来了，整张地图却摆不回去。
 ### 拆开看 · BomberStudio
 
 一个 Windows 上的 Unity 资源浏览、预览与导出工具。能打开 Unity 的各种容器，也能处理很多游戏自己的私有格式，把模型、贴图、动画、音频导出来。
@@ -40,6 +45,7 @@ CS2 ZE 地图的制作、皮肤的移植与调整、模型整理。地图我会�
 
 ## 项目
 
+- **[SekiroMapToolkit](https://github.com/Hoshino486/SekiroMapToolkit)** —— 只狼地图导出工具，MSB/FLVER/MTD/TPF → Blender
 - **[BomberStudio](https://github.com/Hoshino486/BomberStudio)** —— Unity 资源浏览、预览与导出工具
 - **[BomberStudio_Blender](https://github.com/Hoshino486/BomberStudio_Blender)** —— 把导出的模型接进 Blender 的插件
 - **[ZePractice](https://github.com/Hoshino486/ZePractice)** —— CS2 跑图服插件（练习、指挥、投票、诊断）
